@@ -51,7 +51,7 @@ cResult2 := ""
 			Next
 		Next
 		If !Empty(cOutput)
-			cResult2 := oMatcher:Transform(cOutput, 1)
+			cResult2 := oMatcher:Replace(cOutput)
 		EndIf
 	Else
 		Alert("no match!")
