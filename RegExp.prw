@@ -97,6 +97,7 @@ Local aRet       := {}
 aAdd(aRet, self:nTimes)
 aAdd(aRet, self:Satisfatory)
 aAdd(aRet, self:lCase)
+aAdd(aRet, self:UniSatisfatory)
 
 Return aRet
 
@@ -116,6 +117,7 @@ METHOD RedoMirror(aMirror) CLASS RegExpPattern
 self:nTimes := aMirror[1]
 self:Satisfatory := aMirror[2]
 self:lCase := aMirror[3]
+self:UniSatisfatory := aMirror[4]
 
 Return
 
@@ -909,7 +911,7 @@ While lContinue
 			self:lReset := .F.
 			While Len(self:Posibles) > 0
 				nAux := (aMirror := aTail(self:Posibles))[2]
-				If Len(aMirror) > 7 .Or. !(self:Satisfatory .And. self:UniSatisfatory)
+				If Len(aMirror) > 7 .Or. !(self:Satisfatory .And. self:UniSatisfatory) .Or. nAux == nPos
 					UndoGroup(nAux)
 					If Len(aMirror) > 7
 						self:HasGroup := .T.
@@ -933,6 +935,10 @@ While lContinue
 					oPattern := self:Patterns[self:nCount]
 					oPattern:RedoMirror(aMirror[6])
 					aSize(self:Posibles, Len(self:Posibles) - 1)
+					If oPattern:Type == REGEXP_GROUP
+						oPattern:HasGroup := .T.
+						ChkGroup(oPattern, @cStr)
+					EndIf
 					ProcOk(self, @lStarted, @nPos, @nLen, @nLenStr, @cStr)
 					If self:LastResult == REGEXP_RESULT_PARTIAL ;
 						.Or. self:LastResult == REGEXP_RESULT_SUCCESS ;
@@ -1102,10 +1108,15 @@ If (self:LastResult == REGEXP_RESULT_PARTIAL .And. oPattern:Satisfatory .And. nL
 		Endif
 		nAux++
 	End
-	If nAux > nLen .And. !self:UniSatisfatory
-		self:UniSatisfatory := .T.
-		self:Satisfatory := (self:Min <= self:nTimes .And. (Empty(self:Max) .Or. self:nTimes <= self:Max))
-		self:nEnd := nPos
+	If nAux > nLen
+		If !self:UniSatisfatory
+			self:UniSatisfatory := .T.
+			self:Satisfatory := (self:Min <= self:nTimes .And. (Empty(self:Max) .Or. self:nTimes <= self:Max))
+			self:nEnd := nPos
+		EndIf
+		If nLenStr <= nPos .And. self:Satisfatory .And. self:LastResult == REGEXP_RESULT_PARTIAL
+			self:LastResult := REGEXP_RESULT_SUCCESS
+		EndIf
 	EndIf
 EndIf
 
