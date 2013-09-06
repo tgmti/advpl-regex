@@ -1280,7 +1280,7 @@ If nIndex > 0 .And. ValType(self:Result) != "U" .And. Len(self:Result) >= nIndex
 					Case cChar == "r"
 						cRet += chr(10)
 					Case "0" <= cChar .And. cChar <= "9"
-						nNum := GrabNumber(aGroups, @cOutput, @cChar, @nI, @nLen)
+						nNum := GrabNumber(aGroups, @cOutput, @cChar, @nI, @nLen, @cNum)
 						If 0 < nNum .And. nNum <= Len(aGroups)
 							If Len(aGroups[nNum]) > 0
 								cRet += aGroups[nNum][1]
@@ -1293,11 +1293,11 @@ If nIndex > 0 .And. ValType(self:Result) != "U" .And. Len(self:Result) >= nIndex
 						nI++
 						If "0" <= (cChar := SubStr(cOutput, nI, 1)) .And. cChar <= "9"
 							nNum2 := 0
-							nNum := GrabNumber(aGroups, @cOutput, @cChar, @nI, @nLen)
+							nNum := GrabNumber(aGroups, @cOutput, @cChar, @nI, @nLen, @cNum)
 							If cChar == ","
 								nI++
 								If "0" <= (cChar := SubStr(cOutput, nI, 1)) .And. cChar <= "9"
-									nNum2 := GrabNumber(aGroups, @cOutput, @cChar, @nI, @nLen)
+									nNum2 := GrabNumber(aGroups, @cOutput, @cChar, @nI, @nLen, @cNum)
 								EndIf
 							EndIf
 							If 0 < nNum .And. nNum <= Len(aGroups)
@@ -1372,7 +1372,7 @@ Return cRet
 
 @return integer, o número capturado
 /*/
-Static Function GrabNumber(aGroups, cOutput, cChar, nI, nLen)
+Static Function GrabNumber(aGroups, cOutput, cChar, nI, nLen, cNum)
 cNum := ""
 While "0" <= cChar .And. cChar <= "9".And. nI <= nLen .And. val(cNum+cChar) <= Len(aGroups)
 	cNum += cChar
