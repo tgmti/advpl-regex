@@ -40,6 +40,7 @@ METHOD StartMatch(cStr, nPos, lCase)
 METHOD Matching(cStr, nPos)
 METHOD Satisfy()
 METHOD IsLazy()
+METHOD IsPosible(cStr, nPos, lCase)
 
 ENDCLASS
 
@@ -188,6 +189,29 @@ METHOD IsLazy() CLASS RegExpPattern
 
 Return (self:Satisfatory .And. self:QuantType == REGEXP_QUANTIFIER_LAZY)
 
+
+
+/*/{Protheus.doc} IsPosible
+	Determina se a Pattern é possível no contexto atual
+@author thiago
+@since 06/09/2013
+@version 1.0
+
+@param cStr, character, Texto a validar
+@param nPos, numérico, Posição atual
+@param lCase, boolean, Se é case sensitive
+
+@return boolean, Verdadeiro se possível, falso senão.
+
+/*/
+METHOD IsPosible(cStr, nPos, lCase) CLASS RegExpPattern
+Local aMirror := self:Mirror()
+Local nRet := self:StartMatch(cStr, nPos, lCase)
+
+self:RedoMirror(aMirror)
+
+Return aIn(nRet, Acceptable)
+
 /*/{Protheus.doc} LiteralRegExpPattern
 Classe de RegExp que representa String literais
 
@@ -317,8 +341,8 @@ ENDCLASS
 METHOD New(aCapture, nMin, nMax, nQuantType) CLASS ParameterRegExpPattern
 _Super:new("", nMin, nMax, nQuantType)
 self:aCapture := aCapture
-self:Comp := {|aCap| Lower(aCap[2]) == Lower(SubStr(cStr, nPos, Len(aCap[2]))) }
-self:CaseComp := {|aCap| aCap[2] == SubStr(cStr, nPos, Len(aCap[2])) }
+self:Comp := {|aCap| Lower(Result(cStr, aCap[1], aCap[2])) == Lower(SubStr(cStr, nPos, aCap[2]-aCap[1])) }
+self:CaseComp := {|aCap| Result(cStr, aCap[1], aCap[2]) == Lower(SubStr(cStr, nPos, aCap[2]-aCap[1])) }
 
 Return
 
@@ -345,7 +369,7 @@ nRet := _Super:StartMatch(cStr, @nPos, lCase)
 Return nRet
 
 METHOD GetLen(nPos) CLASS ParameterRegExpPattern
-Return Len(aGroups[self:aCapture[1]][nPos][2])
+Return aGroups[self:aCapture[1],nPos,2] - aGroups[self:aCapture[1],nPos,1]
 
 
 
@@ -439,6 +463,7 @@ METHOD Mirror()
 METHOD RedoMirror(aMirror)
 METHOD StartMatch(cStr, nPos, lCase)
 METHOD Matching(cStr, nPos0)
+METHOD IsPosible(cStr, nPos, lCase)
 
 ENDCLASS
 
@@ -602,6 +627,31 @@ EndIf
 
 Return ChkOrPosibles(self, nPos, nRet, @nPos0)
 
+/*/{Protheus.doc} IsPosible
+	Determina se a Pattern é possível no contexto atual
+@author thiago
+@since 06/09/2013
+@version 1.0
+
+@param cStr, character, Texto a validar
+@param nPos, numérico, Posição atual
+@param lCase, boolean, Se é case sensitive
+
+@return boolean, Verdadeiro se possível, falso senão.
+
+/*/
+METHOD IsPosible(cStr, nPos, lCase) CLASS OrRegExpPattern
+Local lRet := .F.
+Local nI
+
+For nI := 1 To Len(self:Patterns)
+	If lRet := self:Patterns[nI]:IsPosible(cStr, nPos, lCase)
+		Exit
+	EndIf
+Next
+
+Return lRet
+
 
 Static Function ChkOrPosibles(self, nPos, nRet, nPos0)
 Local nI
@@ -666,7 +716,9 @@ METHOD RedoMirror(aMirror)
 METHOD StartMatch(cStr, nPos, lCase)
 METHOD Matching(cStr, nPos0)
 METHOD IsLazy()
+METHOD IsPosible(cStr, nPos, lCase)
 
+Return nRet
 ENDCLASS
 
 METHOD New(aPatterns, nMin, nMax, nQuantType, lInInit, lINEnd) CLASS GroupRegExpPattern
@@ -696,21 +748,13 @@ Return
 /*/
 METHOD Mirror() CLASS GroupRegExpPattern
 Local aRet := _Super:Mirror()
-Local aSubMirror := {}
-Local nI
 
 aAdd(aRet, aClone(self:Posibles))
 aAdd(aRet, aClone(self:PosiRepets))
 aAdd(aRet, self:LastResult)
+aAdd(aRet, aClone(aGroups))
 aAdd(aRet, self:nStart)
 aAdd(aRet, self:nEnd)
-aAdd(aRet, self:lReset)
-
-For nI := 1 To Len(self:Patterns)
-	aAdd(aSubMirror, self:Patterns[nI]:Mirror())
-Next
-aAdd(aRet, aSubMirror)
-aAdd(aRet, self:HasGroup)
 aAdd(aRet, self:nCount)
 
 Return aRet
@@ -725,23 +769,18 @@ Return aRet
 
 /*/
 METHOD RedoMirror(aMirror) CLASS GroupRegExpPattern
-Local nPosIni := Len(aMirror) - 8
-Local nI
+Local nPosIni := Len(aMirror) - 6
 
 _Super:RedoMirror(aMirror)
 
 self:Posibles := aMirror[nPosIni]
 self:PosiRepets := aMirror[nPosIni + 1]
 self:LastResult := aMirror[nPosIni + 2]
-self:nStart := aMirror[nPosIni + 3]
-self:nEnd := aMirror[nPosIni + 4]
-self:lReset := aMirror[nPosIni + 5]
+aGroups := aMirror[nPosIni + 3]
+self:nStart := aMirror[nPosIni + 4]
+self:nEnd := aMirror[nPosIni + 5]
+self:nCount := aMirror[nPosIni + 6]
 
-For nI := 1 To Len(self:Patterns)
-	self:Patterns[nI]:RedoMirror(aMirror[nPosIni + 6][nI])
-Next
-self:HasGroup := aMirror[nPosIni + 7]
-self:nCount := aMirror[nPosIni + 8]
 Return
 
 /*/{Protheus.doc} StartMatch
@@ -822,76 +861,73 @@ METHOD Matching(cStr, nPos0) CLASS GroupRegExpPattern
 Local nLen       := Len(self:Patterns)
 Local nLenStr    := Len(cStr)
 Local lStarted   := .F.
-Local lGrouped   := .F.
 Local lContinue  := .T.
 Local nPos        := nPos0
+Local lPosibling := .F.
 Local aMirror
-Local aMirrorAnt
 Local nCnt
-Local nRes
 Local nAux
 
 Private oPattern
 
 While lContinue
-	If self:lReset
-		self:nCount++
-		self:Patterns[self:nCount]:ResetSatisfatory()
-		lStarted := (self:nCount == 1)
-	EndIf
-
-	oPattern := self:Patterns[self:nCount]
+	If !lPosibling
+		If self:lReset
+			self:nCount++
+			self:Patterns[self:nCount]:ResetSatisfatory()
+			lStarted := (self:nCount == 1)
+		EndIf
 	
-	aMirrorAnt := { self:nCount, oPattern:Mirror() }
-	//Saber se a Pattern é satisfatória antes de qualquer análise é importante,
-	//pois isso é um indicador de que na String analisada ao menos um caracter
-	//justifica a Pattern
-	If oPattern:Satisfatory
-		//Projeção de possibilidades.
-		//Neste trecho são analisadas as próximas patterns, enquanto a sequência se mantiver satisfatória.
-		//Estas possibilidades serão assumidas mais pra frente, da última para a primeira, se a Pattern atual falhar ou se
-		//A string for analisada até o final e a Pattern atual continuar válida
-		nCnt := self:nCount
-		If self:Patterns[nCnt]:QuantType == REGEXP_QUANTIFIER_NORMAL .And.;
-			 self:Patterns[nCnt]:Satisfatory .And. ;
-			 self:LastResult != REGEXP_RESULT_FAIL
-			 // 
-			nAux := nPos
-			While (nCnt < nLen) .And. self:Patterns[nCnt]:Satisfatory .And. self:Patterns[nCnt]:UniSatisfatory
-				nCnt++
-				self:Patterns[nCnt]:ResetSatisfatory()
-			End
-			For nCnt := nCnt to self:nCount+1 STEP -1
-				If aIn(nRes := self:Patterns[nCnt]:StartMatch(cStr, @nAux, self:lCase), Acceptable)
-					aAdd(self:Posibles, {nCnt, nPos, nAux, nRes, self:nTimes, self:Patterns[nCnt]:Mirror(), aMirrorAnt })
-				EndIf
-			Next
-			UndoGroup(nPos)
-			If nCnt == nLen .And. self:UniSatisfatory .And. (Empty(self:Max) .Or. self:nTimes+1 < self:Max)
-				If self:nCount == 1
-					//Fazer backup do estado atual do objeto se o ativo for o primeiro
-					aMirror := self:Patterns[1]:Mirror()
-				EndIf
-				nAux := nPos
-				If aIn(nRes := self:Patterns[1]:StartMatch(cStr, @nAux, self:lCase), Acceptable)
-					//
-					aAdd(self:Posibles, {1, nPos, nAux, nRes, self:nTimes+1, self:Patterns[1]:Mirror(), aMirrorAnt, .T. })
-				EndIf
-				If self:nCount == 1
-					//Restaurar o estado atual do objeto se o ativo for o primeiro
-					self:Patterns[1]:RedoMirror(aMirror)
-				EndIf
-			Endif
-			UndoGroup(nPos)
+		oPattern := self:Patterns[self:nCount]
+
+		//Saber se a Pattern é satisfatória antes de qualquer análise é importante,
+		//pois isso é um indicador de que na String analisada ao menos um caracter
+		//justifica a Pattern
+		If oPattern:Satisfatory
+			//Projeção de possibilidades.
+			//Neste trecho são analisadas as próximas patterns, enquanto a sequência se mantiver satisfatória.
+			//Estas possibilidades serão assumidas mais pra frente, da última para a primeira, se a Pattern atual falhar ou se
+			//A string for analisada até o final e a Pattern atual continuar válida
+			nCnt := self:nCount
+			If self:Patterns[nCnt]:QuantType == REGEXP_QUANTIFIER_NORMAL .And.;
+				 self:Patterns[nCnt]:Satisfatory .And. ;
+				 self:LastResult != REGEXP_RESULT_FAIL
+				 // 
+				While (nCnt < nLen) .And. self:Patterns[nCnt]:Satisfatory .And. self:Patterns[nCnt]:UniSatisfatory
+					nCnt++
+					self:Patterns[nCnt]:ResetSatisfatory()
+				End
+				For nCnt := nCnt to self:nCount+1 STEP -1
+					If self:Patterns[nCnt]:IsPosible(cStr, nPos, self:lCase)
+						aMirror := { nPos, self:Mirror() }
+						aMirror[2,1] := Max(1, aMirror[2,1]) //Possibilidades podem ser detectadas antes de testar o primeiro pattern
+						aTail(aMirror[2]) := nCnt
+						aAdd(self:Posibles, aMirror)
+					EndIf
+				Next
+				If self:nTimes > 0 .And. self:UniSatisfatory .And. (Empty(self:Max) .Or. self:nTimes+1 < self:Max)
+					If self:Patterns[1]:IsPosible(cStr, nPos, self:lCase)
+						aMirror := { nPos, self:Mirror() }
+						aTail(aMirror[2]) := 1
+						aAdd(self:Posibles, aMirror)
+					EndIf
+				Endif
+			EndIf
+		EndIf
+	Else
+		oPattern := self:Patterns[self:nCount]
+		lPosibling := .F.
+		If self:nStart == nil //Possibilidades podem ser detectadas antes de testar o primeiro pattern
+			self:nStart := nPos
 		EndIf
 	EndIf
 
 	//Os resultados abaixo são indicadores de que a Pattern deve ser iniciada
 	If self:LastResult ==  REGEXP_RESULT_NOMATCH .Or. self:lReset
-		self:Unisatisfatory := .F.
 		self:lReset := .F.
 		//Se for a primeira Pattern, definir a posição inicial do Match como a atual
 		If self:nCount == 1
+			self:Unisatisfatory := .F.
 			self:nStart := nPos
 			self:nTimes++
 		EndIf
@@ -906,52 +942,20 @@ While lContinue
 		(nLenStr <= nPos .And. self:LastResult ==  REGEXP_RESULT_PARTIAL))
 		//
 		If Len(self:Posibles) > 0
-			//Se houver projeção de possibilidades a avaliar e a Pattern atual já entrou no método como satisfatória,
-			//Então pode-se analisar outras possibilidades (pois a Pattern atual tem pelo menos um caracter justificando-a)
-			self:lReset := .F.
 			While Len(self:Posibles) > 0
-				nAux := (aMirror := aTail(self:Posibles))[2]
-				If Len(aMirror) > 7 .Or. !(self:Satisfatory .And. self:UniSatisfatory) .Or. nAux == nPos
+				nAux := (aMirror := aTail(self:Posibles))[1]
+				aSize(self:Posibles, Len(self:Posibles) - 1)
+				If Len(aMirror) > 2 .Or. !(self:Satisfatory .And. self:UniSatisfatory) .Or. nAux == nPos
 					UndoGroup(nAux)
-					If Len(aMirror) > 7
-						self:HasGroup := .T.
-						ChkGroup(self, @cStr)
-						self:nStart := self:nEnd
-						self:UniSatisfatory := .F.
-					Else
-						oPattern := self:Patterns[aMirror[7][1]]
-						oPattern:RedoMirror(aMirror[7][2])
-						If oPattern:Type == REGEXP_GROUP .And. oPattern:Satisfatory .And. ValType(oPattern:nEnd) == "N"
-							oPattern:HasGroup := .T.
-							lGrouped := .T.
-							ChkGroup(oPattern, @cStr)
-						EndIf
-					EndIf
-		
-					self:nCount := aMirror[1]
-					nPos := aMirror[3]
-					self:LastResult := aMirror[4]
-					self:nTimes := aMirror[5]
-					oPattern := self:Patterns[self:nCount]
-					oPattern:RedoMirror(aMirror[6])
-					aSize(self:Posibles, Len(self:Posibles) - 1)
-					If oPattern:Type == REGEXP_GROUP
-						oPattern:HasGroup := .T.
-						ChkGroup(oPattern, @cStr)
-					EndIf
-					ProcOk(self, @lStarted, @nPos, @nLen, @nLenStr, @cStr)
-					If self:LastResult == REGEXP_RESULT_PARTIAL ;
-						.Or. self:LastResult == REGEXP_RESULT_SUCCESS ;
-						.Or. self:Satisfatory
-						//
-						Exit
-					EndIf
-				Else
+					nPos := nAux
+					self:lReset := .T.
+					self:RedoMirror(aMirror[2])
+					lPosibling := .T.
 					Exit
 				EndIf
 			End
-			If (nLenStr <= nPos .And. self:LastResult ==  REGEXP_RESULT_PARTIAL)
-				self:LastResult := REGEXP_RESULT_FAIL
+			If lPosibling
+				Loop
 			EndIf
 		ElseIf self:UniSatisfatory
 			If self:Min > 1 .Or. self:Max != 1
@@ -1023,6 +1027,23 @@ If !lRet
 EndIf
 
 Return lRet
+
+/*/{Protheus.doc} IsPosible
+	Determina se a Pattern é possível no contexto atual
+@author thiago
+@since 06/09/2013
+@version 1.0
+
+@param cStr, character, Texto a validar
+@param nPos, numérico, Posição atual
+@param lCase, boolean, Se é case sensitive
+
+@return boolean, Verdadeiro se possível, falso senão.
+
+/*/
+METHOD IsPosible(cStr, nPos, lCase) CLASS GroupRegExpPattern
+
+Return self:Patterns[1]:IsPosible(cStr, nPos, lCase)
 
 Static Function ProcOk(self, lStarted, nPos, nLen, nLenStr, cStr)
 Local nAux
@@ -1141,9 +1162,9 @@ EndIf
 
 Return
 
-Static Function Result(self, cStr)
+Static Function Result(cStr, nStart, nEnd)
 
-Return SubStr(cStr, self:nStart, self:nEnd - self:nStart)
+Return SubStr(cStr, nStart, nEnd - nStart)
 
 
 /*/{Protheus.doc} RegExp
@@ -1469,14 +1490,14 @@ EndIf
 If nRet ==  REGEXP_RESULT_SUCCESS
 	nPosIni := self:Pattern:nEnd
 	aRet := {nil,aGrpRes, { self:Pattern:nStart, self:Pattern:nEnd } }
-	aRet[1] := Result(self:Pattern, cStr)
+	aRet[1] := Result(cStr, self:Pattern:nStart, self:Pattern:nEnd)
 	For nPos := 1 To Len(aGroups)
 		For nJ := 1 To Len(aGroups[nPos])
 			If self:Pattern:nStart <= aGroups[nPos, nJ, 1] ;
-				.And. aGroups[nPos, nJ, 1]  + Len(aGroups[nPos, nJ, 2]) <= self:Pattern:nEnd ;
+				.And. aGroups[nPos, nJ, 2] <= self:Pattern:nEnd ;
 				.And. ValType(aGroups[nPos, nJ]) != "U" .And. aGroups[nPos, nJ, 4] 
 				//
-				aAdd(aRet[2, nPos], aGroups[nPos, nJ, 2])
+				aAdd(aRet[2, nPos], Result(cStr, aGroups[nPos, nJ, 1], aGroups[nPos, nJ, 2]))
 			EndIf
 		Next
 	Next
@@ -1501,9 +1522,9 @@ Local nPos
 If Len(aGroups) > 0 .And. (nInd := aScan(oRegExp:GrpIndex, oPattern)) > 0
 	If oPattern:HasGroup
 		If (nPos := aScan(aGroups[nInd], {|aItem| oPattern:nStart <= aItem[1]})) > 0
-			aGroups[nInd][nPos] := {oPattern:nStart, Result(oPattern, cStr), oPattern:nTimes, oPattern:UniSatisfatory .Or. oPattern:LastResult ==  REGEXP_RESULT_SUCCESS}
+			aGroups[nInd][nPos] := {oPattern:nStart, oPattern:nEnd, oPattern:nTimes, oPattern:UniSatisfatory .Or. oPattern:LastResult ==  REGEXP_RESULT_SUCCESS}
 		Else
-			aAdd(aGroups[nInd], {oPattern:nStart, Result(oPattern, cStr), oPattern:nTimes, oPattern:UniSatisfatory .Or. oPattern:LastResult ==  REGEXP_RESULT_SUCCESS} )
+			aAdd(aGroups[nInd], {oPattern:nStart, oPattern:nEnd, oPattern:nTimes, oPattern:UniSatisfatory .Or. oPattern:LastResult ==  REGEXP_RESULT_SUCCESS} )
 		EndIf
 		oPattern:HasGroup := .F.
 	EndIf
