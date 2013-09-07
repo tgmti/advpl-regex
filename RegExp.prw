@@ -474,55 +474,6 @@ self:Patterns := aPatterns
 
 Return
 
-/*/{Protheus.doc} Mirror
-	Retorna uma array com um espelho do Estado atual do Pattern
-@author thiago.santos
-@since 26/08/2013
-@version 1.0
-
-@return array, Espelho de estado do pattern
-
-/*/
-METHOD Mirror() CLASS OrRegExpPattern
-Local aRet := _Super:Mirror()
-Local aMirrors := {}
-Local nI
-
-aAdd(aRet, aClone(self:vPatterns))
-aAdd(aRet, self:oSelected)
-If ValType(self:vPatterns) == "A"
-	For nI := 1 To Len(self:vPatterns)
-		aAdd(aMirrors, self:vPatterns[nI, 3]:Mirror())
-	Next
-EndIf
-aAdd(aRet, aMirrors)
-
-Return aRet
-
-/*/{Protheus.doc} RedoMirror
-	Retorna o pattern para o Estado espelhado informado por parâmetro
-@author thiago.santos
-@since 26/08/2013
-@version 1.0
-
-@param aMirror, array, Espelho de estado do pattern
-
-/*/
-METHOD RedoMirror(aMirror) CLASS OrRegExpPattern
-Local nPos      := Len(aMirror) - 2
-Local nI
-
-_Super:RedoMirror(aMirror)
-self:vPatterns := aMirror[nPos]
-nPos++
-self:oSelected := aMirror[nPos]
-nPos++ 
-For nI := 1 To Len(aMirror[nPos])
-	self:vPatterns[nI,3]:RedoMirror(aMirror[nPos,ni])
-Next
-
-Return
-
 /*/{Protheus.doc} StartMatch
 	Inicia a validação de pattern
 @author thiago.santos
@@ -717,8 +668,7 @@ METHOD StartMatch(cStr, nPos, lCase)
 METHOD Matching(cStr, nPos0)
 METHOD IsLazy()
 METHOD IsPosible(cStr, nPos, lCase)
-
-Return nRet
+	
 ENDCLASS
 
 METHOD New(aPatterns, nMin, nMax, nQuantType, lInInit, lINEnd) CLASS GroupRegExpPattern
