@@ -60,3 +60,183 @@ cResult2 := ""
 //ErrorBlock(bError)
 
 Return cRet
+
+	
+/*/{Protheus.doc} RegUnit
+	Unidade de teste do RegExp
+@author thiago
+@since 07/09/2013
+@version 1.0		
+
+@description
+
+O intuito desta função é testar o mecanismo de regexp com expressões conhecidas que ofereçam diferentes situações.
+Para inserir um teste, basta incluir um novo elemento na Array aTests. O elemento deve ter o seguinte formato:
+
+	{; //Número do teste
+			<TEXTO QUE SERÁ TESTADO>
+		,	<EXPRESÃO REGEX>
+		,	{ ;
+				{ <RESULTADO OCORRENCIA 1>, { { <CAPTURA 1 GRUPO 1>, <CAPTURA 2 GRUPO 2>, ..., <CAPTURA N GRUPO 2> }, { <CAPTURA 1 GRUPO 2>,...}, { <CAPTURA 1 GRUPO N>, ...} } } ;
+			,	{ <RESULTADO OCORRENCIA 2>, { { <CAPTURA 1 GRUPO 1>, <CAPTURA 2 GRUPO 2>, ..., <CAPTURA N GRUPO 2> }, { <CAPTURA 1 GRUPO 2>,...}, { <CAPTURA 1 GRUPO N>, ...} } } ;
+			... ...
+			,	{ <RESULTADO OCORRENCIA N>, { { <CAPTURA 1 GRUPO 1>, <CAPTURA 2 GRUPO 2>, ..., <CAPTURA N GRUPO 2> }, { <CAPTURA 1 GRUPO 2>,...}, { <CAPTURA 1 GRUPO N>, ...} } } ;
+		} ;
+	} ;
+
+O número do teste evidentemente apenas está ali para facilitar a manutenção. É comum montarmos o teste e o mesmo conter
+informações erradas, por isso, use o debug para checar e deixar seu teste com informação 100% confiável.
+Tome cuidado especial se a expressão utilizada por ventura capturar caracteres especiais, como \n e \r, pois será necessário deixar
+explicíto também nos resultados ou nos grupos tais caracteres
+/*/
+User Function RegUnit()
+Local aTests := ;
+{ ;
+	{; //1
+			"amorzinho, te amo mucho mucho para sempre"	;
+		,	"([maeto]+).([mucho]+)"	;
+		,	{ ;
+				{ "amo", {{"a"}, {"o"}} };
+			,	{ "amo mucho", {{"amo"}, {"mucho"}} };
+			,	{ "mucho", {{"m"}, {"cho"}} };
+		} ;
+	};
+	,{; //2
+			"amorzinho, te amo mucho mucho para sempre"	;
+		,	"([ma eto]+) (( {0,1}[mucho]+))"	;
+		,	{ ;
+				{ " te amo mucho", {{" te amo"}, {"mucho"}, {"mucho"}} };
+		} ;
+	};
+	,{; //3
+			"amorzinho, te amo mucho mucho para sempre"	;
+		,	"([ma eto]+) (( {0,1}[mucho]+)+)"	;
+		,	{ ;
+				{ " te amo mucho mucho", {{" te amo"}, {"mucho mucho"}, {"mucho", " mucho"}} };
+		} ;
+	};
+	,{; //4
+			"amorzinho, te amo mucho mucho para sempre"	;
+		,	"([ma eto]+)(( [mucho]+)+)"	;
+		,	{ ;
+				{ " te amo mucho mucho", {{" te amo"}, {" mucho mucho"}, {" mucho", " mucho"}} };
+		} ;
+	};
+	,{; //5
+			"amorzinho, te amo mucho mucho para sempre"	;
+		,	"([ma eto]+)(( [mucho]+)+) para sempre"	;
+		,	{ ;
+				{ " te amo mucho mucho para sempre", {{" te amo"}, {" mucho mucho"}, {" mucho", " mucho"}} };
+		} ;
+	};
+	,{; //6
+			"amorzinho, te amo mucho mucho para sempre"	;
+		,	"([ma eto]+)(( [mucho]+)+) para (sempre)?"	;
+		,	{ ;
+				{ " te amo mucho mucho para sempre", {{" te amo"}, {" mucho mucho"}, {" mucho", " mucho"}, {"sempre"}} };
+		} ;
+	};
+	,{; //7
+			"thiagothiagothiago"	;
+		,	"(thiago)+\1"	;
+		,	{ ;
+				{ "thiagothiagothiago", {{"thiago", "thiago"}} };
+		} ;
+	};
+	,{; //8
+			"thiagothiagothiago"	;
+		,	"(thiago)+\1?"	;
+		,	{ ;
+				{ "thiagothiagothiago", {{"thiago", "thiago", "thiago"}} };
+		} ;
+	};
+	,{; //9
+			"thiagothiagothiago"	;
+		,	"(thiago){2}\1?"	;
+		,	{ ;
+				{ "thiagothiagothiago", {{"thiago", "thiago"}} };
+		} ;
+	};
+	,{; //10
+			"teste teste@gmail.com"+CRLF+"teste2 teste2@totvs.com.br"	;
+		,	"[\w-\._\+%]+@(?:[\w-]+\.)+[\w]{2,6}"	;
+		,	{ ;
+				{ "teste@gmail.com", {} };
+			,	{ "teste2@totvs.com.br", {} };
+		} ;
+	};
+	,{; //11
+			"ip1: 192.168.0.1"+CRLF+"ip2: 192.36.0.2"	;
+		,	"(?:([2](?:[0-4][0-9]|[5][0-5])|[0-1]?[0-9]?[0-9])[.]){3}(?:([2](?:[0-4][0-9]|[5][0-5])|[0-1]?[0-9]?[0-9]))"	;
+		,	{ ;
+				{ "192.168.0.1", { { "192","168","0"}, { "1" } } };
+			,	{ "192.36.0.2", { { "192","36","0"}, { "2" } } };
+		} ;
+	};
+	,{; //12
+			'lin1col1,lin1col2,lin1col3'+CRLF+"lin2col1,lin2col2,lin2col3"+CRLF+'"linha3""col1",lin3col2,lin3col3'	;
+		,	'(?:("(?:[^"]|"")+"|[^",\n\r]++)[,\n\r]?)+'	;
+		,	{ ;
+				{ "lin1col1,lin1col2,lin1col3"+CHR(13), { { "lin1col1" ,"lin1col2","lin1col3" } } };
+			,	{ "lin2col1,lin2col2,lin2col3"+CHR(13), { { "lin2col1","lin2col2","lin2col3" } } };
+			,	{ '"linha3""col1",lin3col2,lin3col3'+CHR(13), { { '"linha3""col1"','lin3col2','lin3col3' } } };
+		} ;
+	};
+	,{; //13
+			'1 + 1 = 2'	;
+		,	'\d+\s*[+*-/.]\s*\d+(\s*=\s*\d+)?'	;
+		,	{ ;
+				{ "1 + 1 = 2", { { " = 2" }} };
+		} ;
+	};
+	,{; //14
+			'1 + 1 = 2'	;
+		,	'\d+\s*[+*-/.]\s*\d+((\s*=\s*\d+))?'	;
+		,	{ ;
+				{ "1 + 1 = 2", { { " = 2" }, { " = 2" } } };
+		} ;
+	};
+}
+Local cLog := ""
+Local nI
+Local nJ
+Local nK
+Local nL
+Local oMatcher
+
+For nI := 1 to Len(aTests)
+	oMatcher := U_ReComp(aTests[nI, 2])
+	If oMatcher:Find(aTests[nI, 1])
+		If Len(oMatcher:Result) != Len(aTests[nI, 3])
+			cLog += "Wrong count of results in test "+Alltrim(Str(nI, 10,0))+CRLF
+		Else
+			For nJ := 1 To Len(oMatcher:Result)
+				If aTests[nI,3,nJ,1] != oMatcher:Result[nJ,1]
+					cLog += "Result "+Alltrim(Str(nJ, 10,0))+" is wrong in test "+Alltrim(Str(nI, 10,0))+CRLF
+				ElseIf Len(aTests[nI,3,nJ, 2]) != Len(oMatcher:Result[nJ, 2])
+					cLog += "Wrong count of groups in result "+Alltrim(Str(nJ, 10,0))+" of test "+Alltrim(Str(nI, 10,0))+CRLF
+				Else
+					For nK := 1 To Len(oMatcher:Result[nJ, 2])
+						If Len(aTests[nI,3,nJ,2,nK]) != Len(oMatcher:Result[nJ, 2, nK])
+							cLog += "Wrong count of occurrences in group "+Alltrim(Str(nK, 10,0))+" of result "+Alltrim(Str(nJ, 10,0))+" of test "+Alltrim(Str(nI, 10,0))+CRLF
+						Else
+							For nL := 1 To Len(oMatcher:Result[nJ, 2, nK])
+								If aTests[nI,3,nJ,2,nK, nL] != oMatcher:Result[nJ, 2, nK, nL]
+									cLog += "Wrong capture of occurrence "+Alltrim(Str(nL, 10,0))+" in group "+Alltrim(Str(nK, 10,0))+" of result "+Alltrim(Str(nJ, 10,0))+" of test "+Alltrim(Str(nI, 10,0))+CRLF
+								EndIf
+							Next
+						EndIf
+					Next
+				EndIf
+			next 
+		EndIf
+	Else
+		cLog += "Can't match test "+Alltrim(Str(nI, 1))+CRLF
+	EndIf
+Next
+
+If Empty(cLog)
+	MsgInfo("Everything ok!")
+Else
+	Alert(cLog)
+EndIf
