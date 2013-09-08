@@ -657,7 +657,6 @@ DATA LastResult
 DATA nStart
 DATA nEnd
 DATA lReset
-DATA HasGroup
 DATA Minimal
 DATA LastFail
 
@@ -760,7 +759,6 @@ self:lReset := .T.
 
 For nI := nPos To Len(cStr)
 	self:LastFail := nil
-	self:HasGroup := .F.
 	self:Posibles := {}
 	self:PosiRepets := {}
 	nAux := nI
@@ -927,7 +925,6 @@ While lContinue
 				self:LastResult := REGEXP_RESULT_SUCCESS
 				nPos := self:nEnd - 1
 			EndIf
-			self:HasGroup := .T.
 			ChkGroup(self, @cStr)
 		EndIf
 	EndIf
@@ -1012,7 +1009,6 @@ If self:LastResult == REGEXP_RESULT_SUCCESS
 					self:nCount := 0
 					self:Posibles := {}
 					self:lReset := .T.
-					self:HasGroup := .T.
 					self:LastResult :=  REGEXP_RESULT_PARTIAL
 				Else
 					self:LastResult :=  IIF(self:Min > self:nTimes, REGEXP_RESULT_FAIL, REGEXP_RESULT_SUCCESS)
@@ -1095,7 +1091,6 @@ If self:UniSatisfatory .Or. self:LastResult == REGEXP_RESULT_SUCCESS
 
 	If aIn(self:LastResult, Acceptable)
 		self:nEnd := nPos+1
-		self:HasGroup := .T.
 		ChkGroup(self, @cStr)
 	EndIf
 
@@ -1241,6 +1236,7 @@ Local nNum
 Local nNum2
 Local cRet
 Local cChar
+Local cAux
 Local nI
 
 If nIndex > 0 .And. ValType(self:Result) != "U" .And. Len(self:Result) >= nIndex
@@ -1269,6 +1265,29 @@ If nIndex > 0 .And. ValType(self:Result) != "U" .And. Len(self:Result) >= nIndex
 							EndIf
 						Else
 							cRet += "\"+cNum
+						EndIf
+						nStart := nI
+					Case cChar == "<"
+						nI++
+						cAux := ""
+						While !((cChar := SubStr(cOutput, nI, 1)) $ ",>")
+							cAux += cChar
+							nI++
+						End
+						nI++
+						If cChar == "," .And. "0" <= (cChar := SubStr(cOutput, nI, 1)) .And. cChar <= "9"
+							nNum2 := GrabNumber(aGroups, @cOutput, @cChar, @nI, @nLen)
+						Else
+							nNum2 := 1
+						EndIf
+						If !Empty(cAux) .And. (nNum := aScan(self:GrpIndex, { |aGroup| aGroup[1] == cAux })) > 0 ;
+							.And. (0 < nNum2 .And. nNum2 <= Len(aGroups[nNum]) .Or. nNum2 == 1)
+							//
+							If Len(aGroups[nNum]) > 0
+								cRet += aGroups[nNum][1]
+							EndIf
+						Else
+							cRet += "\!#ERRORNAMEDGROUP#!"
 						EndIf
 						nStart := nI
 					Case cChar == "("
@@ -1469,14 +1488,11 @@ Static Function ChkGroup(oPattern, cStr)
 Local nInd
 Local nPos
 
-If Len(aGroups) > 0 .And. (nInd := aScan(oRegExp:GrpIndex, oPattern)) > 0
-	If oPattern:HasGroup
-		If (nPos := aScan(aGroups[nInd], {|aItem| oPattern:nStart <= aItem[1]})) > 0
-			aGroups[nInd][nPos] := {oPattern:nStart, oPattern:nEnd, oPattern:nTimes, oPattern:UniSatisfatory .Or. oPattern:LastResult ==  REGEXP_RESULT_SUCCESS}
-		Else
-			aAdd(aGroups[nInd], {oPattern:nStart, oPattern:nEnd, oPattern:nTimes, oPattern:UniSatisfatory .Or. oPattern:LastResult ==  REGEXP_RESULT_SUCCESS} )
-		EndIf
-		oPattern:HasGroup := .F.
+If Len(aGroups) > 0 .And. (nInd := aScan(oRegExp:GrpIndex, { |aGroup| aScan(aGroup[2], oPattern) > 0 }) ) > 0
+	If (nPos := aScan(aGroups[nInd], {|aItem| oPattern:nStart <= aItem[1]})) > 0
+		aGroups[nInd][nPos] := {oPattern:nStart, oPattern:nEnd, oPattern:nTimes, oPattern:UniSatisfatory .Or. oPattern:LastResult ==  REGEXP_RESULT_SUCCESS}
+	Else
+		aAdd(aGroups[nInd], {oPattern:nStart, oPattern:nEnd, oPattern:nTimes, oPattern:UniSatisfatory .Or. oPattern:LastResult ==  REGEXP_RESULT_SUCCESS} )
 	EndIf
 EndIf
 
@@ -1629,16 +1645,6 @@ EndIf
 
 Return bRet
 
-/*/{Protheus} RegExpComp
-Compila uma string com padrão de RegExp
-
-@param character, cPattern a String RegExp a compilar
-
-@return a Pattern compilada
-@author Thiago Oliveira Santos
-@since 23/05/2013
-@version 1.0
-/*/
 #xTranslate ST_GETTING => 0
 #xTranslate ST_CLASSING => 1
 #xTranslate ST_GROUPING => 2
@@ -1696,6 +1702,9 @@ Local lStart     := lSub .Or. Left(cPattern, 1) == "^" //Um sub-grupo sempre dev
 Local lEnd       := !lSub .And. Right(cPattern, 1) == "$"
 Local nEnd       := IIF(lEnd, Len(cPattern)-1, Len(cPattern))
 Local lOrLiteral := .T.
+Local aGroupIndex := {}
+Local cAux
+Local nAux
 Local nGroup
 Local lGroup
 
@@ -1791,12 +1800,29 @@ For nI := nIni To nEnd
 			ElseIf cChar == "("
 				nGroup := nI
 				nI++
-				If lGroup := (SubStr(cPattern, nI, 2) == "?:")
-					nI+=2
+				cAux := ""
+				If SubStr(cPattern, nI, 1) == "?"
+					nI++
+					If lGroup := (SubStr(cPattern, nI, 1) == ":")
+						nI++
+					ElseIf SubStr(cPattern, nI, 1) == "<"
+						nI++
+						While SubStr(cPattern, nI, 1) != ">"
+							cAux += SubStr(cPattern, nI, 1)
+							nI++
+						End
+						nI++
+					EndIf
+				Else
+					lGroup := .F.
 				EndIf
 				uEscape := RegExpComp(cPattern, @nI,@aParams)
 				If !lGroup
-					aAdd(aParams, { nGroup, uEscape })
+					If !Empty(cAux) .And. (nAux := aScan(aParams, { |aGroup| aGroup[2, 1] == cAux })) > 0
+						aAdd(aParams[nAux,2,2], uEscape)
+					Else
+						aAdd(aParams, { nGroup, { cAux, { uEscape } } })
+					EndIf
 				EndIf
 			ElseIf cChar == ")"
 				If !lSub
@@ -1884,9 +1910,9 @@ oRet := GroupRegExpPattern():New(aPatterns,,,,lStart,lEnd)
 If !lSub
 	aSort(aParams,,, { |aLine, aLine2| aLine[1] < aLine2[1] })
 	For nI := 1 To Len(aParams)
-		aParams[nI] := aParams[nI, 2]
+		aAdd(aGroupIndex, aParams[nI, 2])
 	Next
-	oRet := RegExp():New(oRet, aParams)
+	oRet := RegExp():New(oRet, aGroupIndex)
 EndIf
 
 Return oRet
