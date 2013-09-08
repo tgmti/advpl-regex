@@ -317,6 +317,7 @@ Return Len(self:aMatch[nPos])
 /*/
 CLASS ParameterRegExpPattern FROM LiteralRegExpPattern
 DATA aCapture
+DATA nStart
 
 METHOD New(aCapture, nMin, nMax, nQuantType) CONSTRUCTOR
 METHOD StartMatch(cStr, nPos, lCase)
@@ -360,16 +361,34 @@ Return
 
 /*/
 METHOD StartMatch(cStr, nPos, lCase) CLASS ParameterRegExpPattern
-Local aCapture := aGroups[self:aCapture[1]]
+Local aCapture
 Local nRet
 
-self:aMatch := aCapture
-nRet := _Super:StartMatch(cStr, @nPos, lCase)
+If ValType(self:aCapture[1]) == "C"
+	self:nStart := aScan(oRegExp:GrpIndex, { |aGroup| aGroup[1] == self:aCapture[1] })
+Else
+	self:nStart := self:aCapture[1]
+EndIf
+
+If 0 < self:nStart .And. self:nStart <= Len(aGroups)
+	aCapture := aGroups[self:nStart]
+
+	If self:aCapture[2] > 0 .And. self:aCapture[2] <= Len(aCapture) 
+		aCapture := { aCapture[self:aCapture[2]] }
+	EndIf
+	
+	self:aMatch := aCapture
+	nRet := _Super:StartMatch(cStr, @nPos, lCase)
+Else
+	nRet := REGEXP_RESULT_FAIL
+EndIf
 
 Return nRet
 
 METHOD GetLen(nPos) CLASS ParameterRegExpPattern
-Return aGroups[self:aCapture[1],nPos,2] - aGroups[self:aCapture[1],nPos,1]
+Local n2Ind := IIF(self:aCapture[2] <= 0, nPos, self:aCapture[2])
+
+Return aGroups[self:nStart,n2Ind,2] - aGroups[self:nStart,n2Ind,1]
 
 
 
@@ -1236,7 +1255,7 @@ Local nNum
 Local nNum2
 Local cRet
 Local cChar
-Local cAux
+Local aAux
 Local nI
 
 If nIndex > 0 .And. ValType(self:Result) != "U" .And. Len(self:Result) >= nIndex
@@ -1258,7 +1277,7 @@ If nIndex > 0 .And. ValType(self:Result) != "U" .And. Len(self:Result) >= nIndex
 					Case cChar == "r"
 						cRet += chr(10)
 					Case "0" <= cChar .And. cChar <= "9"
-						nNum := GrabNumber(aGroups, @cOutput, @cChar, @nI, @nLen, @cNum)
+						nNum := GrabNumber(@cOutput, @cChar, @nI, @nLen, @cNum)
 						If 0 < nNum .And. nNum <= Len(aGroups)
 							If Len(aGroups[nNum]) > 0
 								cRet += aGroups[nNum][1]
@@ -1267,61 +1286,32 @@ If nIndex > 0 .And. ValType(self:Result) != "U" .And. Len(self:Result) >= nIndex
 							cRet += "\"+cNum
 						EndIf
 						nStart := nI
+						nI--
 					Case cChar == "<"
-						nI++
-						cAux := ""
-						While !((cChar := SubStr(cOutput, nI, 1)) $ ",>")
-							cAux += cChar
-							nI++
-						End
-						nI++
-						If cChar == "," .And. "0" <= (cChar := SubStr(cOutput, nI, 1)) .And. cChar <= "9"
-							nNum2 := GrabNumber(aGroups, @cOutput, @cChar, @nI, @nLen)
-						Else
-							nNum2 := 1
-						EndIf
-						If !Empty(cAux) .And. (nNum := aScan(self:GrpIndex, { |aGroup| aGroup[1] == cAux })) > 0 ;
-							.And. (0 < nNum2 .And. nNum2 <= Len(aGroups[nNum]) .Or. nNum2 == 1)
+						aAux := GrabName(@cOutput, @cChar, @nI, @nLen)
+						If !Empty(aAux[1]) .And. (nNum := aScan(self:GrpIndex, { |aGroup| aGroup[1] == aAux[1] })) > 0 ;
+							.And. (0 < aAux[2] .And. aAux[2] <= Len(aGroups[nNum]) .Or. aAux[2] == 1)
 							//
 							If Len(aGroups[nNum]) > 0
-								cRet += aGroups[nNum][1]
+								cRet += aGroups[nNum][aAux[2]]
 							EndIf
 						Else
 							cRet += "\!#ERRORNAMEDGROUP#!"
 						EndIf
 						nStart := nI
+						nI--
 					Case cChar == "("
-						nI++
-						If "0" <= (cChar := SubStr(cOutput, nI, 1)) .And. cChar <= "9"
-							nNum2 := 0
-							nNum := GrabNumber(aGroups, @cOutput, @cChar, @nI, @nLen, @cNum)
-							If cChar == ","
-								nI++
-								If "0" <= (cChar := SubStr(cOutput, nI, 1)) .And. cChar <= "9"
-									nNum2 := GrabNumber(aGroups, @cOutput, @cChar, @nI, @nLen, @cNum)
+						aAux := GrabNumbs(@cOutput, @cChar, @nI, @nLen)
+						If 0 < aAux[1] .And. aAux[1] <= Len(aGroups)
+							If Len(aGroups[aAux[1]]) > 0
+								If 0 >= aAux[2] .Or. aAux[2] > Len(aGroups[nNum])
+									nNum2 := 1
 								EndIf
+								cRet += aGroups[aAux[1], aAux[2]]
 							EndIf
-							If 0 < nNum .And. nNum <= Len(aGroups)
-								If Len(aGroups[nNum]) > 0
-									If 0 >= nNum2 .Or. nNum2 > Len(aGroups[nNum])
-										nNum2 := 1
-									EndIf
-									cRet += aGroups[nNum, nNum2]
-								EndIf
-							Else
-								cRet += "\"+cNum
-							EndIf
-						Else
-							UserException("Not implemented yet")
-							Return nil
 						EndIf
-						If SubStr(cOutput, nI, 1) != ")"
-							UserException("Group capturing invalid")
-							Return nil
-						Else
-							nI++
-							nStart := nI
-						EndIf
+						nStart := nI
+						nI--
 					OtherWise
 						cRet += "\"+cChar
 				EndCase
@@ -1373,16 +1363,59 @@ Return cRet
 
 @return integer, o número capturado
 /*/
-Static Function GrabNumber(aGroups, cOutput, cChar, nI, nLen, cNum)
+Static Function GrabNumber(cOutput, cChar, nI, nLen, cNum)
+Default nLen := Len(cOutput)
 cNum := ""
-While "0" <= cChar .And. cChar <= "9".And. nI <= nLen .And. val(cNum+cChar) <= Len(aGroups)
+While "0" <= cChar .And. cChar <= "9".And. nI <= nLen
 	cNum += cChar
 	nI++
 	If nI <= nLen
 		cChar := SubStr(cOutput, nI, 1)
 	EndIf
 End
+
 Return int(val(cNum))
+
+Static Function GrabName(cOutput, cChar, nI, nLen, n2Def)
+Local cAux      := ""
+
+Default nLen := Len(cOutput)
+Default n2Def := 1
+nI++
+While nI <= nLen .And. !((cChar := SubStr(cOutput, nI, 1)) $ ",>")
+	cAux += cChar
+	nI++
+End
+nI++
+If cChar == "," .And. "0" <= (cChar := SubStr(cOutput, nI, 1)) .And. cChar <= "9"
+	nNum2 := GrabNumber(@cOutput, @cChar, @nI, @nLen)
+	nI++
+Else
+	nNum2 := n2Def
+EndIf
+
+Return { cAux, nNum2 }
+
+Static Function GrabNumbs(cOutput, cChar, nI, nLen, n2Def)
+Local nNum       := 0
+Local nNum2
+
+Default n2Def := 1
+nNum2 := n2Def
+nI++
+If "0" <= (cChar := SubStr(cOutput, nI, 1)) .And. cChar <= "9"
+	nNum2 := 0
+	nNum := GrabNumber(@cOutput, @cChar, @nI, @nLen)
+	nI++
+	If cChar == ","
+		If "0" <= (cChar := SubStr(cOutput, nI, 1)) .And. cChar <= "9"
+			nNum2 := GrabNumber(@cOutput, @cChar, @nI, @nLen)
+			nI++
+		EndIf
+	EndIf
+EndIf
+
+Return { nNum, nNum2 }
 
 /*/{Protheus} LookRegEx
 	Função para busca ou validação de regexp
@@ -1962,6 +1995,7 @@ Tratamento de caracteres de Escape na compilação da expressão
 /*/
 Static Function RegExpEsc(cChar, uEscape, cPattern, nI, lRE)
 Static cHexa := "0123456789ABCDEF"
+Local aAux
 Local cNum
 Local nNum
 
@@ -2002,15 +2036,18 @@ Do Case
 		If nI < Len(cPattern)
 			nI += 2
 		EndIf
-	Case "1" <= cChar .And. cChar <= "9"
-		cNum := ""
-		While "0" <= cChar .And. cChar <= "9"
-			cNum += cChar
-			nI++
-			cChar := SubStr(cPattern, nI, 1)
-		End
+	Case "0" <= cChar .And. cChar <= "9"
+		nNum := GrabNumber(@cPattern, @cChar, @nI)
 		nI-- //Regride um para não pular caracter na próxima volta
-		uEscape := ParameterRegExpPattern():New({ int(Val(cNum)), 1})
+		uEscape := ParameterRegExpPattern():New({ nNum, 0})
+	Case cChar == "<"
+		aAux := GrabName(@cPattern, @cChar, @nI,, 0)
+		nI-- //Regride um para não pular caracter na próxima volta
+		uEscape := ParameterRegExpPattern():New(aAux)
+	Case cChar == "("
+		aAux := GrabNumbs(@cPattern, @cChar, @nI,, 0)
+		nI-- //Regride um para não pular caracter na próxima volta
+		uEscape := ParameterRegExpPattern():New(aAux)
 	Case cChar == "x"
 		cNum := Upper(SubStr(cPattern, nI+1, 1))
 		If !(cNum $ cHexa)
