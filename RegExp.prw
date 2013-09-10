@@ -1062,7 +1062,7 @@ Else
 	EndIf
 EndIf	
 
-If (self:LastResult == REGEXP_RESULT_PARTIAL .And. oPattern:Satisfatory .And. nLenStr <= nPos) ;
+If (self:LastResult == REGEXP_RESULT_PARTIAL .And. (oPattern:Satisfatory .Or. self:lReset) .And. nLenStr <= nPos) ;
 	.Or. (!self:Satisfatory .And. oPattern:Satisfatory .And. (self:LastResult == REGEXP_RESULT_NOMATCH ;
 																	.Or. self:LastResult ==  REGEXP_RESULT_FAIL))
 	//
