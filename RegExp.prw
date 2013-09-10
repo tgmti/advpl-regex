@@ -3,7 +3,7 @@
 
 
 Static bLetters := ClassPattern("A", "Z") //Classe de letras
-Static bDigits := ClassPattern("0", "9") //Classe de d√≠gitos (\n)
+Static bDigits := ClassPattern("0", "9") //Classe de dÌgitos (\n)
 Static bWord := { |cStr| Eval(bDigits, cStr) .Or. Eval(bLetters, Upper(cStr)) } //Classe \w
 Static bNWord := { |cStr| !Eval(bWord, cStr) } //Classe \W
 Static bNDigits := { |cStr| !Eval(bDigits, cStr) } //Classe \N
@@ -14,7 +14,7 @@ Static Deniable := { REGEXP_RESULT_NOMATCH, REGEXP_RESULT_FAIL }
 Static Definable := { REGEXP_RESULT_FAIL, REGEXP_RESULT_SUCCESS }
 
 /*/{Protheus.doc} RegExpPattern
-Classe pai de padr√µes de RegExp
+Classe pai de padrıes de RegExp
 
 @author Thiago Oliveira Santos
 @since 23/05/2013
@@ -26,7 +26,7 @@ DATA Type
 DATA Satisfatory
 DATA UniSatisfatory
 DATA lCase
-DATA nTimes //Contador para controle da valida√ß√£o da Pattern
+DATA nTimes //Contador para controle da validaÁ„o da Pattern
 DATA Min
 DATA Max
 DATA NextPattern
@@ -52,8 +52,8 @@ ENDCLASS
 @since 26/08/2013
 @version 1.0
 
-@param nMin, numeric, N√∫mero m√≠nimo exigido (padr√£o 1)
-@param nMax, numeric, N√∫mero m√°ximo exigido (padr√£o 1)
+@param nMin, numeric, N˙mero mÌnimo exigido (padr„o 1)
+@param nMax, numeric, N˙mero m·ximo exigido (padr„o 1)
 @param nQuantType, numeric, Tipo de Quantificador (NORMAL, LAZY ou VORACIOUS)
 
 /*/
@@ -70,7 +70,7 @@ Return
 
 
 /*/{Protheus.doc} ResetSatisfatory
-	Reseta o estado das flags de satisfa√ß√£o de pattern
+	Reseta o estado das flags de satisfaÁ„o de pattern
 @author thiago.santos
 @since 26/08/2013
 @version 1.0
@@ -105,7 +105,7 @@ Return aRet
 
 
 /*/{Protheus.doc} RedoMirror
-	Retorna o pattern para o Estado espelhado informado por par√¢metro
+	Retorna o pattern para o Estado espelhado informado por par‚metro
 @author thiago.santos
 @since 26/08/2013
 @version 1.0
@@ -125,16 +125,16 @@ Return
 
 
 /*/{Protheus.doc} StartMatch
-	Inicia a valida√ß√£o de pattern
+	Inicia a validaÁ„o de pattern
 @author thiago.santos
 @since 26/08/2013
 @version 1.0
 
 @param cStr, character, String a validar
-@param nPos, numeric, Posi√ß√£o inicial a validar
-@param lCase, boolean, Determina se √© case sensitive (true) ou n√£o (false)
+@param nPos, numeric, PosiÁ„o inicial a validar
+@param lCase, boolean, Determina se È case sensitive (true) ou n„o (false)
 
-@return integer, o resultado da apura√ß√£o inicial
+@return integer, o resultado da apuraÁ„o inicial
 
 /*/
 METHOD StartMatch(cStr, nPos, lCase) CLASS RegExpPattern
@@ -148,8 +148,8 @@ Return self:Matching(cStr, @nPos)
 
 
 /*/{Protheus.doc} Satisfy
-	M√©todo chamado para dizer que a ocorr√™ncia atual da regexp √© satisfat√≥ria,
-	e avan√ßar o contador de repeti√ß√£o
+	MÈtodo chamado para dizer que a ocorrÍncia atual da regexp È satisfatÛria,
+	e avanÁar o contador de repetiÁ„o
 @author thiago.santos
 @since 26/08/2013
 @version 1.0
@@ -177,12 +177,12 @@ Return nRet
 
 
 /*/{Protheus.doc} IsLazy
-	Determina se o quantificador da regexp √© do tipo LAZY
+	Determina se o quantificador da regexp È do tipo LAZY
 @author thiago.santos
 @since 26/08/2013
 @version 1.0
 
-@return boolean, verdadeiro se o tipo for lazy, falso caso contr√°rio.
+@return boolean, verdadeiro se o tipo for lazy, falso caso contr·rio.
 
 /*/
 METHOD IsLazy() CLASS RegExpPattern
@@ -192,16 +192,16 @@ Return (self:Satisfatory .And. self:QuantType == REGEXP_QUANTIFIER_LAZY)
 
 
 /*/{Protheus.doc} IsPosible
-	Determina se a Pattern √© poss√≠vel no contexto atual
+	Determina se a Pattern È possÌvel no contexto atual
 @author thiago
 @since 06/09/2013
 @version 1.0
 
 @param cStr, character, Texto a validar
-@param nPos, num√©rico, Posi√ß√£o atual
-@param lCase, boolean, Se √© case sensitive
+@param nPos, numÈrico, PosiÁ„o atual
+@param lCase, boolean, Se È case sensitive
 
-@return boolean, Verdadeiro se poss√≠vel, falso sen√£o.
+@return boolean, Verdadeiro se possÌvel, falso sen„o.
 
 /*/
 METHOD IsPosible(cStr, nPos, lCase) CLASS RegExpPattern
@@ -238,8 +238,8 @@ ENDCLASS
 @version 1.0
 
 @param aMatch, array, array com strings aceitas para match
-@param nMin, numeric, N√∫mero m√≠nimo exigido (padr√£o 1)
-@param nMax, numeric, N√∫mero m√°ximo exigido (padr√£o 1)
+@param nMin, numeric, N˙mero mÌnimo exigido (padr„o 1)
+@param nMax, numeric, N˙mero m·ximo exigido (padr„o 1)
 @param nQuantType, numeric, Tipo de Quantificador (NORMAL, LAZY ou VORACIOUS)
 
 /*/
@@ -254,15 +254,15 @@ self:CaseComp := {|cMatch| cMatch == SubStr(cStr, nPos, Len(cMatch)) }
 Return
 
 /*/{Protheus.doc} Matching
-	Segue com a valida√ß√£o de matching para o pattern
+	Segue com a validaÁ„o de matching para o pattern
 @author thiago.santos
 @since 26/08/2013
 @version 1.0
 
 @param cStr, character, String a analisar
-@param nPos, integer, Posi√ß√£o atual
+@param nPos, integer, PosiÁ„o atual
 
-@return integer, o resultado da avalia√ß√£o (um REGEXP_RESULT)
+@return integer, o resultado da avaliaÁ„o (um REGEXP_RESULT)
 
 /*/
 METHOD Matching(cStr, nPos) CLASS LiteralRegExpPattern
@@ -295,21 +295,21 @@ nPos--
 Return nRet
 
 /*/{Protheus.doc} GetLen
-	Retorna o tamanho da pattern na posi√ß√£o solicitada
+	Retorna o tamanho da pattern na posiÁ„o solicitada
 @author thiago.santos
 @since 26/08/2013
 @version 1.0
 
-@param nPos, integer, Posi√ß√£o a avaliar
+@param nPos, integer, PosiÁ„o a avaliar
 
-@return integer, o tamanho do pattern na posi√ß√£o solicitada
+@return integer, o tamanho do pattern na posiÁ„o solicitada
 
 /*/
 METHOD GetLen(nPos) CLASS LiteralRegExpPattern
 Return Len(self:aMatch[nPos])
 
 /*/{Protheus.doc} ParameterRegExpPattern
-	Classe de Regexp que representa refer√™ncia recursiva de par√¢metro
+	Classe de Regexp que representa referÍncia recursiva de par‚metro
 @author thiago.santos
 @since 26/08/2013
 @version 1.0
@@ -334,8 +334,8 @@ ENDCLASS
 @version 1.0
 
 @param aCapture, array, array com grupos a capturar
-@param nMin, numeric, N√∫mero m√≠nimo exigido (padr√£o 1)
-@param nMax, numeric, N√∫mero m√°ximo exigido (padr√£o 1)
+@param nMin, numeric, N˙mero mÌnimo exigido (padr„o 1)
+@param nMax, numeric, N˙mero m·ximo exigido (padr„o 1)
 @param nQuantType, numeric, Tipo de Quantificador (NORMAL, LAZY ou VORACIOUS)
 
 /*/
@@ -348,16 +348,16 @@ self:CaseComp := {|aCap| Result(cStr, aCap[1], aCap[2]) == Lower(SubStr(cStr, nP
 Return
 
 /*/{Protheus.doc} StartMatch
-	Inicia a valida√ß√£o de pattern
+	Inicia a validaÁ„o de pattern
 @author thiago.santos
 @since 26/08/2013
 @version 1.0
 
 @param cStr, character, String a validar
-@param nPos, numeric, Posi√ß√£o inicial a validar
-@param lCase, boolean, Determina se √© case sensitive (true) ou n√£o (false)
+@param nPos, numeric, PosiÁ„o inicial a validar
+@param lCase, boolean, Determina se È case sensitive (true) ou n„o (false)
 
-@return integer, o resultado da apura√ß√£o inicial
+@return integer, o resultado da apuraÁ„o inicial
 
 /*/
 METHOD StartMatch(cStr, nPos, lCase) CLASS ParameterRegExpPattern
@@ -393,7 +393,7 @@ Return aGroups[self:nStart,n2Ind,2] - aGroups[self:nStart,n2Ind,1]
 
 
 /*/{Protheus.doc} BlCodeRegExpPattern
-	Classe de regexp que valida um bloco de c√≥digo para um caracter
+	Classe de regexp que valida um bloco de cÛdigo para um caracter
 @author thiago.santos
 @since 26/08/2013
 @version 1.0
@@ -417,15 +417,15 @@ self:bCode := bCode
 Return
 
 /*/{Protheus.doc} Matching
-	Segue com a valida√ß√£o de matching para o pattern
+	Segue com a validaÁ„o de matching para o pattern
 @author thiago.santos
 @since 26/08/2013
 @version 1.0
 
 @param cStr, character, String a analisar
-@param nPos, integer, Posi√ß√£o atual
+@param nPos, integer, PosiÁ„o atual
 
-@return integer, o resultado da avalia√ß√£o (um REGEXP_RESULT)
+@return integer, o resultado da avaliaÁ„o (um REGEXP_RESULT)
 
 /*/
 METHOD Matching(cStr, nPos) CLASS BlCodeRegExpPattern
@@ -465,7 +465,7 @@ Return nRet
 
 
 /*/{Protheus.doc} OrRegExpPattern
-	Classe de regexp para valida√ß√£o de "ou" (padr√£o |)
+	Classe de regexp para validaÁ„o de "ou" (padr„o |)
 @author thiago.santos
 @since 26/08/2013
 @version 1.0
@@ -494,16 +494,16 @@ self:Patterns := aPatterns
 Return
 
 /*/{Protheus.doc} StartMatch
-	Inicia a valida√ß√£o de pattern
+	Inicia a validaÁ„o de pattern
 @author thiago.santos
 @since 26/08/2013
 @version 1.0
 
 @param cStr, character, String a validar
-@param nPos, numeric, Posi√ß√£o inicial a validar
-@param lCase, boolean, Determina se √© case sensitive (true) ou n√£o (false)
+@param nPos, numeric, PosiÁ„o inicial a validar
+@param lCase, boolean, Determina se È case sensitive (true) ou n„o (false)
 
-@return integer, o resultado da apura√ß√£o inicial
+@return integer, o resultado da apuraÁ„o inicial
 
 /*/
 METHOD StartMatch(cStr, nPos0, lCase) CLASS OrRegExpPattern
@@ -551,15 +551,15 @@ EndIf
 Return If(Empty(nRet), REGEXP_RESULT_FAIL, nRet)
 
 /*/{Protheus.doc} Matching
-	Segue com a valida√ß√£o de matching para o pattern
+	Segue com a validaÁ„o de matching para o pattern
 @author thiago.santos
 @since 26/08/2013
 @version 1.0
 
 @param cStr, character, String a analisar
-@param nPos0, integer, Posi√ß√£o atual
+@param nPos0, integer, PosiÁ„o atual
 
-@return integer, o resultado da avalia√ß√£o (um REGEXP_RESULT)
+@return integer, o resultado da avaliaÁ„o (um REGEXP_RESULT)
 
 /*/
 METHOD Matching(cStr, nPos0) CLASS OrRegExpPattern
@@ -584,7 +584,7 @@ For nI := 1 To nLen
 			EndIf
 		EndIf
 		If nI >= nLen
-			Exit //Se nI for maior do que o tamaho da matriz descontando os deletados, sair do la√ßo
+			Exit //Se nI for maior do que o tamaho da matriz descontando os deletados, sair do laÁo
 		EndIf
 	EndIf
 Next
@@ -598,16 +598,16 @@ EndIf
 Return ChkOrPosibles(self, nPos, nRet, @nPos0)
 
 /*/{Protheus.doc} IsPosible
-	Determina se a Pattern √© poss√≠vel no contexto atual
+	Determina se a Pattern È possÌvel no contexto atual
 @author thiago
 @since 06/09/2013
 @version 1.0
 
 @param cStr, character, Texto a validar
-@param nPos, num√©rico, Posi√ß√£o atual
-@param lCase, boolean, Se √© case sensitive
+@param nPos, numÈrico, PosiÁ„o atual
+@param lCase, boolean, Se È case sensitive
 
-@return boolean, Verdadeiro se poss√≠vel, falso sen√£o.
+@return boolean, Verdadeiro se possÌvel, falso sen„o.
 
 /*/
 METHOD IsPosible(cStr, nPos, lCase) CLASS OrRegExpPattern
@@ -656,7 +656,7 @@ Return If(Empty(nRet), REGEXP_RESULT_FAIL, nRet)
 
 
 /*/{Protheus.doc} GroupRegExpPattern
-	Classe de RegExp para valida√ß√£o de um grupo de patterns
+	Classe de RegExp para validaÁ„o de um grupo de patterns
 @author thiago.santos
 @since 26/08/2013
 @version 1.0
@@ -664,11 +664,11 @@ Return If(Empty(nRet), REGEXP_RESULT_FAIL, nRet)
 /*/
 CLASS GroupRegExpPattern FROM RegExpPattern
 
-//Est√°ticas
+//Est·ticas
 DATA Patterns
 DATA lInInit
 DATA lInEnd
-//Vari√°veis
+//Vari·veis
 DATA Posibles
 DATA PosiRepets
 DATA nCount
@@ -728,7 +728,7 @@ aAdd(aRet, self:nCount)
 Return aRet
 
 /*/{Protheus.doc} RedoMirror
-	Retorna o pattern para o Estado espelhado informado por par√¢metro
+	Retorna o pattern para o Estado espelhado informado por par‚metro
 @author thiago.santos
 @since 26/08/2013
 @version 1.0
@@ -752,16 +752,16 @@ self:nCount := aMirror[nPosIni + 6]
 Return
 
 /*/{Protheus.doc} StartMatch
-	Inicia a valida√ß√£o de pattern
+	Inicia a validaÁ„o de pattern
 @author thiago.santos
 @since 26/08/2013
 @version 1.0
 
 @param cStr, character, String a validar
-@param nPos, numeric, Posi√ß√£o inicial a validar
-@param lCase, boolean, Determina se √© case sensitive (true) ou n√£o (false)
+@param nPos, numeric, PosiÁ„o inicial a validar
+@param lCase, boolean, Determina se È case sensitive (true) ou n„o (false)
 
-@return integer, o resultado da apura√ß√£o inicial
+@return integer, o resultado da apuraÁ„o inicial
 
 /*/
 METHOD StartMatch(cStr, nPos, lCase) CLASS GroupRegExpPattern
@@ -813,15 +813,15 @@ Next
 Return nRet
 
 /*/{Protheus.doc} Matching
-	Segue com a valida√ß√£o de matching para o pattern
+	Segue com a validaÁ„o de matching para o pattern
 @author thiago.santos
 @since 26/08/2013
 @version 1.0
 
 @param cStr, character, String a analisar
-@param nPos0, integer, Posi√ß√£o atual
+@param nPos0, integer, PosiÁ„o atual
 
-@return integer, o resultado da avalia√ß√£o (um REGEXP_RESULT)
+@return integer, o resultado da avaliaÁ„o (um REGEXP_RESULT)
 
 /*/
 METHOD Matching(cStr, nPos0) CLASS GroupRegExpPattern
@@ -847,14 +847,14 @@ While lContinue
 	
 		oPattern := self:Patterns[self:nCount]
 
-		//Saber se a Pattern √© satisfat√≥ria antes de qualquer an√°lise √© importante,
-		//pois isso √© um indicador de que na String analisada ao menos um caracter
+		//Saber se a Pattern È satisfatÛria antes de qualquer an·lise È importante,
+		//pois isso È um indicador de que na String analisada ao menos um caracter
 		//justifica a Pattern
 		If oPattern:Satisfatory
-			//Proje√ß√£o de possibilidades.
-			//Neste trecho s√£o analisadas as pr√≥ximas patterns, enquanto a sequ√™ncia se mantiver satisfat√≥ria.
-			//Estas possibilidades ser√£o assumidas mais pra frente, da √∫ltima para a primeira, se a Pattern atual falhar ou se
-			//A string for analisada at√© o final e a Pattern atual continuar v√°lida
+			//ProjeÁ„o de possibilidades.
+			//Neste trecho s„o analisadas as prÛximas patterns, enquanto a sequÍncia se mantiver satisfatÛria.
+			//Estas possibilidades ser„o assumidas mais pra frente, da ˙ltima para a primeira, se a Pattern atual falhar ou se
+			//A string for analisada atÈ o final e a Pattern atual continuar v·lida
 			nCnt := self:nCount
 			If self:Patterns[nCnt]:QuantType == REGEXP_QUANTIFIER_NORMAL .And.;
 				 self:Patterns[nCnt]:Satisfatory .And. ;
@@ -889,10 +889,10 @@ While lContinue
 		EndIf
 	EndIf
 
-	//Os resultados abaixo s√£o indicadores de que a Pattern deve ser iniciada
+	//Os resultados abaixo s„o indicadores de que a Pattern deve ser iniciada
 	If self:LastResult ==  REGEXP_RESULT_NOMATCH .Or. self:lReset
 		self:lReset := .F.
-		//Se for a primeira Pattern, definir a posi√ß√£o inicial do Match como a atual
+		//Se for a primeira Pattern, definir a posiÁ„o inicial do Match como a atual
 		If self:nCount == 1
 			self:Unisatisfatory := .F.
 			self:nStart := nPos
@@ -954,18 +954,18 @@ While lContinue
 End
 nPos--
 
-//Abaixo poss√≠veis falhas s√£o reavaliadas.
-//No caso, se a Pattern atual resultou em um NOMATCH ou se a String analisada j√° chegou no √∫ltimo caracter
-//E ainda n√£o foi obtido um Sucesso
+//Abaixo possÌveis falhas s„o reavaliadas.
+//No caso, se a Pattern atual resultou em um NOMATCH ou se a String analisada j· chegou no ˙ltimo caracter
+//E ainda n„o foi obtido um Sucesso
 If self:LastResult == REGEXP_RESULT_NOMATCH .Or. self:LastResult ==  REGEXP_RESULT_FAIL .Or. ;
 		(nLenStr <= nPos .And. self:LastResult ==  REGEXP_RESULT_PARTIAL)
-	//Se o resultado atual n√£o for um NoMatch e for satisfat√≥rio, o resultado √© um sucesso
-	//Veja que neste ponto n√£o h√° outras possibilidades a explorar
+	//Se o resultado atual n„o for um NoMatch e for satisfatÛrio, o resultado È um sucesso
+	//Veja que neste ponto n„o h· outras possibilidades a explorar
 	If self:LastResult != REGEXP_RESULT_NOMATCH .And. self:nCount == nLen .And. self:Satisfatory .And. nPos < nLenStr
 		self:LastResult := REGEXP_RESULT_SUCCESS
 		self:UniSatisfatory := .T.
-	//Se o resultado n√£o tem que estar "colado" no in√≠cio da String e houver mais caracteres
-	//a analisar, reseta-se toda a valida√ß√£o e come√ßa-se a avaliar a String de novo
+	//Se o resultado n„o tem que estar "colado" no inÌcio da String e houver mais caracteres
+	//a analisar, reseta-se toda a validaÁ„o e comeÁa-se a avaliar a String de novo
 	ElseIf (!self:lInInit) .And. !self:Satisfatory .And. (nLenStr > self:nStart+1) .And. (!lStarted)
 		UndoGroup(0)
 		//nPos := self:nStart+1
@@ -995,16 +995,16 @@ EndIf
 Return lRet
 
 /*/{Protheus.doc} IsPosible
-	Determina se a Pattern √© poss√≠vel no contexto atual
+	Determina se a Pattern È possÌvel no contexto atual
 @author thiago
 @since 06/09/2013
 @version 1.0
 
 @param cStr, character, Texto a validar
-@param nPos, num√©rico, Posi√ß√£o atual
-@param lCase, boolean, Se √© case sensitive
+@param nPos, numÈrico, PosiÁ„o atual
+@param lCase, boolean, Se È case sensitive
 
-@return boolean, Verdadeiro se poss√≠vel, falso sen√£o.
+@return boolean, Verdadeiro se possÌvel, falso sen„o.
 
 /*/
 METHOD IsPosible(cStr, nPos, lCase) CLASS GroupRegExpPattern
@@ -1013,9 +1013,9 @@ Return self:Patterns[1]:IsPosible(cStr, nPos, lCase)
 
 Static Function ProcOk(self, lStarted, nPos, nLen, nLenStr, cStr)
 Local nAux
-//Se o √∫ltimo resultado for um sucesso, ent√£o isso √© sinal de que n√£o h√° mais o que fazer com a Pattern atual
+//Se o ˙ltimo resultado for um sucesso, ent„o isso È sinal de que n„o h· mais o que fazer com a Pattern atual
 If self:LastResult == REGEXP_RESULT_SUCCESS
-	//Se n√£o for a √∫ltima Pattern, o resultado √© convertido em PARTIAL e o contador de patterns ser√° avan√ßado na pr√≥xima chamada
+	//Se n„o for a ˙ltima Pattern, o resultado È convertido em PARTIAL e o contador de patterns ser· avanÁado na prÛxima chamada
 	If self:nCount < nLen
 		self:LastResult := REGEXP_RESULT_PARTIAL
 		self:lReset := .T.
@@ -1041,9 +1041,9 @@ If self:LastResult == REGEXP_RESULT_SUCCESS
 		EndIf
 	EndIf
 
-	//Vale notar que um resultado nunca ter√° que ser colado com o final se ele for quantificado.
-	//Um Group RegExp s√≥ ser√° quantificado se for uma sub-express√£o. N√£o √© feito tratamento
-	//para esta situa√ß√£o porque os Ifs acima j√° a satisfazem
+	//Vale notar que um resultado nunca ter· que ser colado com o final se ele for quantificado.
+	//Um Group RegExp sÛ ser· quantificado se for uma sub-express„o. N„o È feito tratamento
+	//para esta situaÁ„o porque os Ifs acima j· a satisfazem
 	If self:lInEnd .And. nPos < nLenStr .And. self:LastResult ==  REGEXP_RESULT_SUCCESS
 		If !self:lInInit .And. !lStarted
 			UndoGroup(0)
@@ -1070,7 +1070,7 @@ Else
 			nAux++
 		EndIf
 		If aIn(self:Patterns[self:nCount+1]:StartMatch(cStr, @nAux, self:lCase), Acceptable)
-			//For√ßa avan√ßar para o pr√≥ximo se for pregui√ßoso e o pr√≥ximo j√° satisfazer
+			//ForÁa avanÁar para o prÛximo se for preguiÁoso e o prÛximo j· satisfazer
 			If self:LastResult != REGEXP_RESULT_PARTIAL
 				nPos--
 			EndIf
@@ -1081,7 +1081,7 @@ Else
 	EndIf
 EndIf	
 
-If (self:LastResult == REGEXP_RESULT_PARTIAL .And. (oPattern:Satisfatory .Or. self:lReset) .And. nLenStr <= nPos) ;
+If (self:LastResult == REGEXP_RESULT_PARTIAL .And. oPattern:Satisfatory .And. nLenStr <= nPos) ;
 	.Or. (!self:Satisfatory .And. oPattern:Satisfatory .And. (self:LastResult == REGEXP_RESULT_NOMATCH ;
 																	.Or. self:LastResult ==  REGEXP_RESULT_FAIL))
 	//
@@ -1162,7 +1162,7 @@ ENDCLASS
 @version 1.0
 
 @param oPattern, object, pattern a avaliar
-@param aGrpIndex, array, Array com √≠ndice de agrupamentos
+@param aGrpIndex, array, Array com Ìndice de agrupamentos
 
 /*/
 METHOD New(oPattern, aGrpIndex) CLASS RegExp
@@ -1174,16 +1174,16 @@ self:nEnd := 0
 Return
 
 /*/{Protheus.doc} Find
-	M√©todo para encontrar a primeira ocorr√™ncia da regexp
+	MÈtodo para encontrar a primeira ocorrÍncia da regexp
 @author thiago.santos
 @since 26/08/2013
 @version 1.0
 
 @param cStr, String a analizar
-@param nMaxOcur, integer, n√∫mero m√°ximo de ocorr√™ncias aceitas. Padr√£o 0 (ilimitado)
-@param lCase, Determina se √© case sensitive
+@param nMaxOcur, integer, n˙mero m·ximo de ocorrÍncias aceitas. Padr„o 0 (ilimitado)
+@param lCase, Determina se È case sensitive
 
-@todo Fazer com que o m√©todo encontra N ocorr√™ncias
+@todo Fazer com que o mÈtodo encontra N ocorrÍncias
 /*/
 METHOD Find(cStr, nMaxOcur, nStart, lCase) CLASS RegExp
 Local lRet       := .F.
@@ -1228,7 +1228,7 @@ Return ValType(self:Result) != "U"
 @version 1.0
 
 @param cStr, character, String a validar
-@param lCase, boolean, Determina se √© case sensitive
+@param lCase, boolean, Determina se È case sensitive
 
 /*/
 METHOD Match(cStr, lCase) CLASS RegExp
@@ -1236,15 +1236,15 @@ METHOD Match(cStr, lCase) CLASS RegExp
 Return (LookRegEx(self, cStr,, lCase, .T.) == "A")
 
 /*/{Protheus.doc} Transform
-	M√©todo para gerar uma string a partir de agrupamentos da string processada com a regexp
+	MÈtodo para gerar uma string a partir de agrupamentos da string processada com a regexp
 @author thiago.santos
 @since 26/08/2013
 @version 1.0
 
-@param cOutput, character, padr√£o de sa√≠da
-@param nIndex, integer, √çndice do resultado
+@param cOutput, character, padr„o de saÌda
+@param nIndex, integer, Õndice do resultado
 
-@todo Fazer com que o m√©todo efetivamente substitua as ocorr√™ncias da string original pelo padr√£o
+@todo Fazer com que o mÈtodo efetivamente substitua as ocorrÍncias da string original pelo padr„o
 /*/
 METHOD Transform(cOutput, nIndex) CLASS RegExp
 Local nLen       := Len(cOutPut)
@@ -1325,12 +1325,12 @@ Return cRet
 
 
 /*/{Protheus.doc} Replace
-	Substitui as ocorr√™ncias encontradas pelo padr√£o de output fornecido
+	Substitui as ocorrÍncias encontradas pelo padr„o de output fornecido
 @author thiago
 @since 01/09/2013
 @version 1.0
 
-@param cOutput, character, Padr√£o de output
+@param cOutput, character, Padr„o de output
 
 /*/
 METHOD Replace(cOutput) CLASS RegExp
@@ -1350,18 +1350,18 @@ EndIf
 Return cRet
 
 /*/{Protheus} GrabNumber
-	Obt√©m um n√∫mero cont√≠nuo a partir da posi√ß√£o especificada
+	ObtÈm um n˙mero contÌnuo a partir da posiÁ„o especificada
 @author thiago
 @since 01/09/2013
 @version 1.0
 
 @param aGroups, array, Grupos capturados
-@param cOutput, character, Padr√£o de output
+@param cOutput, character, Padr„o de output
 @param cChar, character, caracter inicialmente capturado
-@param nI, integer, posi√ß√£o
-@param nLen, integer, tamanho m√°ximo do output
+@param nI, integer, posiÁ„o
+@param nLen, integer, tamanho m·ximo do output
 
-@return integer, o n√∫mero capturado
+@return integer, o n˙mero capturado
 /*/
 Static Function GrabNumber(cOutput, cChar, nI, nLen, cNum)
 Default nLen := Len(cOutput)
@@ -1418,18 +1418,18 @@ EndIf
 Return { nNum, nNum2 }
 
 /*/{Protheus} LookRegEx
-	Fun√ß√£o para busca ou valida√ß√£o de regexp
+	FunÁ„o para busca ou validaÁ„o de regexp
 @author thiago
 @since 01/09/2013
 @version 1.0
 
-@param self, object, Inst√¢ncia de regexp
+@param self, object, Inst‚ncia de regexp
 @param cStr, character, String a processar
-@param nPosIni, integer, Posi√ß√£o inicial
-@param lCase, boolean, Se √© case sensitive
-@param lMatch, boolean, se √© para validar ou buscar
+@param nPosIni, integer, PosiÁ„o inicial
+@param lCase, boolean, Se È case sensitive
+@param lMatch, boolean, se È para validar ou buscar
 
-@return array, Vetor com as ocorr√™ncias encontradas, ou nil caso n√£o existam ocorr√™ncias
+@return array, Vetor com as ocorrÍncias encontradas, ou nil caso n„o existam ocorrÍncias
 /*/
 Static Function LookRegEx(self, cStr, nPosIni, lCase, lMatch)
 Local aRet       := nil
@@ -1446,7 +1446,7 @@ Default lMatch := .F.
 Private oRegExp    := self
 Private aGrpProj   := IIF(lMatch, {}, Array(Len(self:GrpIndex)))
 Private aGroups := aClone(aGrpProj)
-Private lProjectin := nil //Declarando apenas para se certificar que sua exist√™ncia anterior n√£o vai interferir
+Private lProjectin := nil //Declarando apenas para se certificar que sua existÍncia anterior n„o vai interferir
 
 aGrpRes := aClone(aGrpProj)
 For nPos := 1 To Len(aGroups)
@@ -1467,7 +1467,7 @@ If nRet == REGEXP_RESULT_NOMATCH
 	nRet := IIF(self:Pattern:Satisfatory, REGEXP_RESULT_SUCCESS, REGEXP_RESULT_FAIL)
 EndIf
 
-//Seguir avaliando se ainda n√£o tem um resultado definitivo
+//Seguir avaliando se ainda n„o tem um resultado definitivo
 If !aIn(nRet, Definable)
 	For nPos := nPos+1 To Len(cStr)
 		IF aIn(nRet := self:Pattern:Matching(cStr, @nPos), Definable)
@@ -1508,12 +1508,12 @@ EndIf
 Return aRet
 
 /*/{Protheus} ChkGroup
-	Fun√ß√£o para captura de grupo
+	FunÁ„o para captura de grupo
 @author thiago
 @since 01/09/2013
 @version 1.0
 
-@param oPattern, objecto, inst√¢ncia do padr√£o a verificar
+@param oPattern, objecto, inst‚ncia do padr„o a verificar
 @param cStr, character, String de onde extrair a captura
 
 /*/
@@ -1532,12 +1532,12 @@ EndIf
 Return
 
 /*/{Protheus} UndoGroup
-	Desfaz os grupos capturados ap√≥s a posi√ß√£o informada
+	Desfaz os grupos capturados apÛs a posiÁ„o informada
 @author thiago
 @since 01/09/2013
 @version 1.0
 
-@param nStart, integer, posi√ß√£o m√°xima a considerar o grupo aceit√°vel
+@param nStart, integer, posiÁ„o m·xima a considerar o grupo aceit·vel
 
 /*/
 Static Function UndoGroup(nStart)
@@ -1574,7 +1574,7 @@ Classe base para gerar classes de caracter (do tipo intervalo)
 @param cIni, character, Caracter inicial
 @param cFim, character, caracter final
 
-@return codeblock, Um bloco de c√≥digo para validar de um caracter √© da classe
+@return codeblock, Um bloco de cÛdigo para validar de um caracter È da classe
 
 @author Thiago Oliveira Santos
 @since 22/05/2013
@@ -1606,7 +1606,7 @@ Return bWord
 
 /*/{Protheus} NWordPattern
 
-Pattern para caracteres que n√£o s√£o letras (\W)
+Pattern para caracteres que n„o s„o letras (\W)
 
 @return codeblock, o pattern
 
@@ -1619,7 +1619,7 @@ Return bNWord
 
 /*/{Protheus} DigPattern
 
-Pattern para d√≠gitos (\d)
+Pattern para dÌgitos (\d)
 
 @return codeblock, o pattern
 
@@ -1632,7 +1632,7 @@ Return bDigits
 
 /*/{Protheus} NDigPattern
 
-Pattern para n√£o d√≠gitos (\D)
+Pattern para n„o dÌgitos (\D)
 
 @return codeblock, o pattern
 
@@ -1657,11 +1657,11 @@ Static Function AnyPattern()
 Return bAny
 
 /*/{Protheus} CharPattern
-Padr√£o que determina se o char √© igual a um caracter espec√≠fico
+Padr„o que determina se o char È igual a um caracter especÌfico
 
-@param character, cChar do crit√©rio
+@param character, cChar do critÈrio
 
-@return Bloco de c√≥digo com a compara√ß√£o
+@return Bloco de cÛdigo com a comparaÁ„o
 @author thiago.santos
 @since 07/06/2013
 @version 1.0
@@ -1695,7 +1695,7 @@ Return bRet
 		
 @param cPattern, character, Pattern a compilar
 
-@return object, Inst√¢ncia de RegExp
+@return object, Inst‚ncia de RegExp
 
 /*/
 User Function REComp(cPattern)
@@ -1709,10 +1709,10 @@ Return RegExpComp(cPattern)
 @version 1.0
 		
 @param cPattern, character, Pattern a compilar
-@param nIni, numeric, Posi√ß√£o inicial a processar
-@param aParams, array, array com informa√ß√µes sobre grupos de captura
+@param nIni, numeric, PosiÁ„o inicial a processar
+@param aParams, array, array com informaÁıes sobre grupos de captura
 
-@return object, Inst√¢ncia de RegExp
+@return object, Inst‚ncia de RegExp
 
 /*/
 Static Function RegExpComp(cPattern, nIni, aParams)
@@ -1731,7 +1731,7 @@ Local lQntifier  := .F.
 Local aPatterns  := {}
 Local aOr        := {}
 Local lSub       := (ValType(aParams) != "U")
-Local lStart     := lSub .Or. Left(cPattern, 1) == "^" //Um sub-grupo sempre deve ser colado ao come√ßo
+Local lStart     := lSub .Or. Left(cPattern, 1) == "^" //Um sub-grupo sempre deve ser colado ao comeÁo
 Local lEnd       := !lSub .And. Right(cPattern, 1) == "$"
 Local nEnd       := IIF(lEnd, Len(cPattern)-1, Len(cPattern))
 Local lOrLiteral := .T.
@@ -1772,21 +1772,21 @@ For nI := nIni To nEnd
 				EndIf
 				uEscape := nil
 			EndIf
-		//Avalia uma express√£o de escape e retorna em uEscape seu real significado
+		//Avalia uma express„o de escape e retorna em uEscape seu real significado
 			RegExpEsc(cChar, @uEscape, @cPattern, @nI)
 			lEscape := .F.
 		Case nStatus == ST_GETTING
-		//Verifica se o Caracter atual √© um marcador de quantifica√ß√£o, e determina
-		//os valores de quantifica√ß√£o
+		//Verifica se o Caracter atual È um marcador de quantificaÁ„o, e determina
+		//os valores de quantificaÁ„o
 			If cChar $ "{+*?"
 				If !RegExpQnt(cPattern, @nI, @nMin, @nMax, @nQuantType)
 					UserException("Invalid Quantifier")
 				Else
 					lQntifier := .T.
 				EndIf
-				cChar := "" //Limpar cChar porque ele j√° foi avaliado
+				cChar := "" //Limpar cChar porque ele j· foi avaliado
 			Else
-			//Se n√£o for marcador de quantifica√ß√£o, manter q quanficia√ß√£o padr√£o: max = min = 1.
+			//Se n„o for marcador de quantificaÁ„o, manter q quanficiaÁ„o padr„o: max = min = 1.
 				lQntifier := .F.
 				nMax := nMin := 1
 				nQuantType := REGEXP_QUANTIFIER_NORMAL
@@ -1813,15 +1813,15 @@ For nI := nIni To nEnd
 				EndIf
 				uEscape := nil
 			EndIf
-			//Se cChar for vazio foi avaliada uma opera√ß√£o de quantifica√ß√£o
+			//Se cChar for vazio foi avaliada uma operaÁ„o de quantificaÁ„o
 			If Len(cChar) == 0
-				//Se a opera√ß√£o foi bem sucedida e o quantificador n√£o foi aplicado a um uEscape,
-				//Verificar se h√° caracteres literais recolhidos e aplicar o quantificador ao √∫ltimo deles
+				//Se a operaÁ„o foi bem sucedida e o quantificador n„o foi aplicado a um uEscape,
+				//Verificar se h· caracteres literais recolhidos e aplicar o quantificador ao ˙ltimo deles
 				If lQntifier .and. Len(cLiteral) > 0
-					//Se houver mais de 1 literal recolhido, aplicar uma regra de compara√ß√£o literal
+					//Se houver mais de 1 literal recolhido, aplicar uma regra de comparaÁ„o literal
 					addLiteral(aPatterns, @cLiteral, nMin, nMax, nQuantType)
 				EndIf
-			//Se o caracter atual for \, o pr√≥ximo √© um caracter de escape, e ser√° avaliado de maneira
+			//Se o caracter atual for \, o prÛximo È um caracter de escape, e ser· avaliado de maneira
 			///Especial
 			ElseIf cChar == "\"
 				lEscape := .T.
@@ -1951,16 +1951,16 @@ EndIf
 Return oRet
 
 /*/{Protheus} addLiteral
-	Analisa e adiciona uma express√£o literal √† valida√ß√£o 
+	Analisa e adiciona uma express„o literal ‡ validaÁ„o 
 @author thiago
 @since 01/09/2013
 @version 1.0
 
 @param aPatterns, array, vetor com as patterns capturadas
 @param cLiteral, character, stirng literal a tratar
-@param nMin, integer, repeti√ß√£o m√≠nima, padr√£o 1
-@param nMax, integer, repeti√ß√£o m√°xima, padr√£o 1
-@param nQuantType, integer, tipo do quantificador: 0 - normal, 1 - pregui√ßoso, 2 - voraz
+@param nMin, integer, repetiÁ„o mÌnima, padr„o 1
+@param nMax, integer, repetiÁ„o m·xima, padr„o 1
+@param nQuantType, integer, tipo do quantificador: 0 - normal, 1 - preguiÁoso, 2 - voraz
 /*/
 Static Function addLiteral(aPatterns, cLiteral, nMin, nMax, nQuantType)
 Local nLen := Len(cLiteral)
@@ -1984,10 +1984,10 @@ Return
 
 
 /*/{Protheus} RegExpEsc
-Tratamento de caracteres de Escape na compila√ß√£o da express√£o
+Tratamento de caracteres de Escape na compilaÁ„o da express„o
 
 @param cChar, character, caracter a analisar
-@param uEscape, undefined, Resultado da avalia√ß√£o
+@param uEscape, undefined, Resultado da avaliaÁ„o
 
 @author thiago.santos
 @since 07/06/2013
@@ -2038,15 +2038,15 @@ Do Case
 		EndIf
 	Case "0" <= cChar .And. cChar <= "9"
 		nNum := GrabNumber(@cPattern, @cChar, @nI)
-		nI-- //Regride um para n√£o pular caracter na pr√≥xima volta
+		nI-- //Regride um para n„o pular caracter na prÛxima volta
 		uEscape := ParameterRegExpPattern():New({ nNum, 0})
 	Case cChar == "<"
 		aAux := GrabName(@cPattern, @cChar, @nI,, 0)
-		nI-- //Regride um para n√£o pular caracter na pr√≥xima volta
+		nI-- //Regride um para n„o pular caracter na prÛxima volta
 		uEscape := ParameterRegExpPattern():New(aAux)
 	Case cChar == "("
 		aAux := GrabNumbs(@cPattern, @cChar, @nI,, 0)
-		nI-- //Regride um para n√£o pular caracter na pr√≥xima volta
+		nI-- //Regride um para n„o pular caracter na prÛxima volta
 		uEscape := ParameterRegExpPattern():New(aAux)
 	Case cChar == "x"
 		cNum := Upper(SubStr(cPattern, nI+1, 1))
@@ -2074,10 +2074,10 @@ Return
 /*/{Protheus} RegExpQnt
 Tratamento de quantificadores
 
-@param cPattern, character, Padr√£o a analisar
-@param nIni, numeric, Posi√ß√£o Inicial
-@param nMin, numeric, Quantidade m√≠nima esperada
-@param nMax, numeric, Quantidade m√°xima esperada
+@param cPattern, character, Padr„o a analisar
+@param nIni, numeric, PosiÁ„o Inicial
+@param nMin, numeric, Quantidade mÌnima esperada
+@param nMax, numeric, Quantidade m·xima esperada
 
 @return boolean, sempre verdadeiro
 
@@ -2148,9 +2148,9 @@ Return .T.
 Tratamento de classes de caracter
 
 @param cPattern, character, Pattern a analisar
-@param nIni, numeric, Posi√ß√£o inicial a analisar
+@param nIni, numeric, PosiÁ„o inicial a analisar
 
-@return codeblock, Bloco de c√≥digo ou Pattern
+@return codeblock, Bloco de cÛdigo ou Pattern
 
 @author thiago.santos
 @since 07/06/2013
@@ -2251,11 +2251,11 @@ EndIf
 Return {|cChr| NewPattern(aAnd, cChr) }
 
 /*/{Protheus} NewPattern
-Cria√ß√£o de Pattern personalizada, criada por meio de [ ]
+CriaÁ„o de Pattern personalizada, criada por meio de [ ]
 
-@param aAnd, array, Lista de patterns "and" a analisar. Cada pattern and cont√©m v√°rias "or"
+@param aAnd, array, Lista de patterns "and" a analisar. Cada pattern and contÈm v·rias "or"
 
-@return boolean, Verdadeiro se passou no teste, falso se n√£o.
+@return boolean, Verdadeiro se passou no teste, falso se n„o.
 
 @author thiago.santos
 @since 07/06/2013
@@ -2280,10 +2280,10 @@ Next
 Return lRet
 
 /*/{Protheus} aIn
-Determina se certo valor est√° dentro da array informada
+Determina se certo valor est· dentro da array informada
 
 @param uValue, undefined, valor a verificar
-@param aArray, array, Array onde a procura √© feita
+@param aArray, array, Array onde a procura È feita
 
 @return boolean, Verdadeiro ou falso
 
