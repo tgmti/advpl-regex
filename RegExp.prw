@@ -1230,7 +1230,6 @@ Return (LookRegEx(self, cStr,, lCase, .T.) == "A")
 METHOD Transform(cOutput, nIndex) CLASS RegExp
 Local nLen       := Len(cOutPut)
 Local nStart     := 1
-Local aGroups
 Local cNum
 Local nNum
 Local nNum2
@@ -1238,6 +1237,8 @@ Local cRet
 Local cChar
 Local cAux
 Local nI
+
+Private aGroups
 
 If nIndex > 0 .And. ValType(self:Result) != "U" .And. Len(self:Result) >= nIndex
 	aGroups := self:Result[nIndex, 2]
@@ -1322,6 +1323,15 @@ If nIndex > 0 .And. ValType(self:Result) != "U" .And. Len(self:Result) >= nIndex
 							nI++
 							nStart := nI
 						EndIf
+					Case cChar == "{" //Codeblock
+						nI++
+						cAux := ""
+						While (cChar := SubStr(cOutput, nI, 1)) != "}"
+							cAux += cChar
+							nI++
+						End
+						cRet += &cAux
+						nStart := nI+1
 					OtherWise
 						cRet += "\"+cChar
 				EndCase
@@ -2192,6 +2202,18 @@ For nI := nIni+1 To Len(cPattern)
 				cLiteral := ""
 			EndIf
 			lNot := !lNot
+		Case cChar == "."
+			uEscape := AnyPattern()
+			nStatus := 0
+			If lInterval
+				cLiteral += "-"
+				lInterval := .F.
+			EndIf
+			If Len(cLiteral) > 0
+				aAdd(aOr, CharPattern(cLiteral, lNot))
+				cLiteral := ""
+			EndIf
+			aAdd(aOr, uEscape)
 		Case lInterval
 			If Len(cLiteral) == 1
 				aAdd(aOr, ClassPattern(cLiteral, cChar, lNot))
