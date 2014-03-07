@@ -31,6 +31,7 @@ DATA Min
 DATA Max
 DATA NextPattern
 DATA QuantType
+DATA oParent
 
 METHOD New(nMin, nMax, nQuantType) CONSTRUCTOR
 METHOD ResetSatisfatory()
@@ -41,7 +42,8 @@ METHOD Matching(cStr, nPos)
 METHOD Satisfy()
 METHOD IsLazy()
 METHOD IsPosible(cStr, nPos, lCase)
-
+METHOD InInit(cStr, nPos)
+METHOD InEnd(cStr, nPos)
 ENDCLASS
 
 /*/{Protheus.doc} New
@@ -211,6 +213,15 @@ Local nRet := self:StartMatch(cStr, nPos, lCase)
 self:RedoMirror(aMirror)
 
 Return aIn(nRet, Acceptable)
+
+METHOD InInit(cStr, nPos) CLASS RegExpPattern
+
+
+Return self:oParent:InInit(cStr, nPos)
+
+METHOD InEnd(cStr, nPos) CLASS RegExpPattern
+
+Return self:oParent:InEnd(cStr, nPos)
 
 /*/{Protheus.doc} LiteralRegExpPattern
 Classe de RegExp que representa String literais
@@ -468,9 +479,13 @@ METHOD IsPosible(cStr, nPos, lCase)
 ENDCLASS
 
 METHOD New(aPatterns) CLASS OrRegExpPattern
-
+Local nI
 self:Type := REGEXP_OR
 self:Patterns := aPatterns
+
+For nI := 1 To Len(aPatterns)
+	aPatterns[nI]:oParent := self
+Next
 
 Return
 
@@ -669,10 +684,13 @@ METHOD StartMatch(cStr, nPos, lCase)
 METHOD Matching(cStr, nPos0)
 METHOD IsLazy()
 METHOD IsPosible(cStr, nPos, lCase)
-	
+METHOD InInit(cStr, nPos)
+METHOD InEnd(cStr, nPos)
+
 ENDCLASS
 
 METHOD New(aPatterns, nMin, nMax, nQuantType, lInInit, lINEnd) CLASS GroupRegExpPattern
+Local nI
 _Super:New(nMin, nMax, nQuantType)
 
 Default nMin := 1
@@ -685,6 +703,10 @@ self:Patterns := aPatterns
 self:lInInit := lInInit
 self:lINEnd := lINEnd
 self:LastResult :=  REGEXP_RESULT_UNKNOWN
+
+For nI := 1 To Len(aPatterns)
+	aPatterns[nI]:oParent := self
+Next
 
 Return
 
@@ -1128,6 +1150,29 @@ EndIf
 
 Return
 
+METHOD InInit(cStr, nPos) CLASS GroupRegExpPattern
+Local lRet
+
+If ValType(self:oParent) == "U"
+	lRet := self:lInInit
+Else
+	lRet := _Super:InInit()
+EndIf
+
+Return lRet
+
+METHOD InEnd(cStr, nPos) CLASS GroupRegExpPattern
+Local lRet
+Default cStr := ""
+Default nPos := 0
+If ValType(self:oParent) == "U"
+	lRet := self:lInEnd .And. (nPos < Len(cStr) .Or. self:nCount < Len(self:Patterns))
+Else
+	lRet := _Super:InEnd(cStr, nPos)
+EndIf
+
+Return lRet
+
 Static Function Result(cStr, nStart, nEnd)
 
 Return SubStr(cStr, nStart, nEnd - nStart)
@@ -1235,7 +1280,7 @@ Return Len(aRes) > 0
 /*/
 METHOD Match(cStr, lCase) CLASS RegExp
 
-Return (LookRegEx(self, cStr,, lCase, .T.) == "A")
+Return (Valtype(LookRegEx(self, cStr,, lCase, .T.)) == "A")
 
 /*/{Protheus.doc} Transform
 	Método para gerar uma string a partir de agrupamentos da string processada com a regexp
@@ -1440,6 +1485,7 @@ Local nRetAnt
 
 Default lCase := .T.
 Default lMatch := .F.
+Default nPosIni := 1
 
 Private oRegExp    := self
 Private aGrpProj   := IIF(lMatch, {}, Array(Len(self:GrpIndex)))
