@@ -196,6 +196,33 @@ Local aTests := ;
 				{ "1 + 1 = 2", { { " = 2" }, { " = 2" } } };
 		} ;
 	};
+	,{; //15
+			'00'	;
+		,	'^[0-9]{2}|[0][1-9][0-9]{6}|[1-9][0-9]{7}$'	;
+		,	{ ;
+				{ "00", {} };
+		} ;
+	};
+	,{; //16
+			'10000000'	;
+		,	'^[0-9]{2}|[0][1-9][0-9]{6}|[1-9][0-9]{7}$'	;
+		,	{ ;
+				{ "10000000", {} };
+		} ;
+	};
+	,{; //17
+			'01000000'	;
+		,	'^[0-9]{2}|[0][1-9][0-9]{6}|[1-9][0-9]{7}$'	;
+		,	{ ;
+				{ "01000000", {} };
+		} ;
+	};
+	,{; //18
+			'00000000'	;
+		,	'^[0-9]{2}|[0][1-9][0-9]{6}|[1-9][0-9]{7}$'	;
+		,	{ ;
+		} ;
+	};
 }
 Local cLog := ""
 Local nI
@@ -205,9 +232,14 @@ Local nL
 Local oMatcher
 
 For nI := 1 to Len(aTests)
+	If nI == 18
+		ConOut("If condicional")
+	EndIf
 	oMatcher := U_ReComp(aTests[nI, 2])
 	If oMatcher:Find(aTests[nI, 1])
-		If Len(oMatcher:Result) != Len(aTests[nI, 3])
+		If Len(aTests[nI, 3]) == 0
+			cLog += "Wasn't expected any result for test "+Alltrim(Str(nI, 10,0))+CRLF
+		ElseIf Len(oMatcher:Result) != Len(aTests[nI, 3])
 			cLog += "Wrong count of results in test "+Alltrim(Str(nI, 10,0))+CRLF
 		Else
 			For nJ := 1 To Len(oMatcher:Result)
@@ -230,7 +262,7 @@ For nI := 1 to Len(aTests)
 				EndIf
 			next 
 		EndIf
-	Else
+	ElseIf Len(aTests[nI, 3]) > 0
 		cLog += "Can't match test "+Alltrim(Str(nI, 1))+CRLF
 	EndIf
 Next

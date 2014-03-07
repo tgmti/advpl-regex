@@ -487,7 +487,7 @@ Return
 @return integer, o resultado da apuração inicial
 
 /*/
-METHOD StartMatch(cStr, nPos0, lCase) CLASS OrRegExpPattern
+METHOD StartMatch(cStr, nPos0, lCase, nForceOr) CLASS OrRegExpPattern
 Local nI
 Local nRes
 Local nRet       := 0
@@ -498,27 +498,29 @@ self:vPatterns := {}
 self:oSelected := nil
 
 For nI := 1 To Len(self:Patterns)
-	nPos := nPos0
-	nRes := self:Patterns[nI]:StartMatch(cStr, @nPos, lCase)
-	If nRes == REGEXP_RESULT_SUCCESS .Or. nRes == REGEXP_RESULT_PARTIAL ;
-		.Or. (nRes == REGEXP_RESULT_NOMATCH .And. self:Patterns[nI]:Satisfatory)
-		//
-		aAdd(self:vPatterns, {nRes, nPos, self:Patterns[nI] })
-		If nRet != REGEXP_RESULT_SUCCESS
-			If nRes == REGEXP_RESULT_SUCCESS
-				self:oSelected := self:Patterns[nI]
-				nRet := nRes
-			ElseIf (ValType(self:oSelected) != "O" .Or. !self:oSelected:Satisfatory) .And. self:Patterns[nI]:Satisfatory
-				self:oSelected := self:Patterns[nI]
-				nRet := nRes
-			ElseIf (ValType(self:oSelected) != "O" .Or. !self:oSelected:Satisfatory) ;
-				.Or. nRes == REGEXP_RESULT_PARTIAL
-				//
-				self:oSelected := self:Patterns[nI]
-				nRet := nRes
-			ElseIf nRes == REGEXP_RESULT_NOMATCH .And. (Empty(nRet)  .Or. nRet == REGEXP_RESULT_FAIL)
-				self:oSelected := self:Patterns[nI]
-				nRet := nRes
+	If ValType(nForceOr) == "U" .Or. nForceOr == nI
+		nPos := nPos0
+		nRes := self:Patterns[nI]:StartMatch(cStr, @nPos, lCase)
+		If nRes == REGEXP_RESULT_SUCCESS .Or. nRes == REGEXP_RESULT_PARTIAL ;
+			.Or. (nRes == REGEXP_RESULT_NOMATCH .And. self:Patterns[nI]:Satisfatory)
+			//
+			aAdd(self:vPatterns, {nRes, nPos, self:Patterns[nI] })
+			If nRet != REGEXP_RESULT_SUCCESS
+				If nRes == REGEXP_RESULT_SUCCESS
+					self:oSelected := self:Patterns[nI]
+					nRet := nRes
+				ElseIf (ValType(self:oSelected) != "O" .Or. !self:oSelected:Satisfatory) .And. self:Patterns[nI]:Satisfatory
+					self:oSelected := self:Patterns[nI]
+					nRet := nRes
+				ElseIf (ValType(self:oSelected) != "O" .Or. !self:oSelected:Satisfatory) ;
+					.Or. nRes == REGEXP_RESULT_PARTIAL
+					//
+					self:oSelected := self:Patterns[nI]
+					nRet := nRes
+				ElseIf nRes == REGEXP_RESULT_NOMATCH .And. (Empty(nRet)  .Or. nRet == REGEXP_RESULT_FAIL)
+					self:oSelected := self:Patterns[nI]
+					nRet := nRes
+				EndIf
 			EndIf
 		EndIf
 	EndIf
@@ -603,7 +605,6 @@ Next
 
 Return lRet
 
-
 Static Function ChkOrPosibles(self, nPos, nRet, nPos0)
 Local nI
 
@@ -659,6 +660,7 @@ DATA nEnd
 DATA lReset
 DATA Minimal
 DATA LastFail
+DATA nForceOr
 
 METHOD New(aPatterns, nMin, nMax, nQuantType, lInInit, lINEnd) CONSTRUCTOR
 METHOD Mirror()
@@ -704,6 +706,7 @@ aAdd(aRet, self:LastResult)
 aAdd(aRet, aClone(aGroups))
 aAdd(aRet, self:nStart)
 aAdd(aRet, self:nEnd)
+aAdd(aRet, self:nForceOr)
 aAdd(aRet, self:nCount)
 
 Return aRet
@@ -718,7 +721,7 @@ Return aRet
 
 /*/
 METHOD RedoMirror(aMirror) CLASS GroupRegExpPattern
-Local nPosIni := Len(aMirror) - 6
+Local nPosIni := Len(aMirror) - 7
 
 _Super:RedoMirror(aMirror)
 
@@ -728,7 +731,8 @@ self:LastResult := aMirror[nPosIni + 2]
 aGroups := aMirror[nPosIni + 3]
 self:nStart := aMirror[nPosIni + 4]
 self:nEnd := aMirror[nPosIni + 5]
-self:nCount := aMirror[nPosIni + 6]
+self:nForceOr := aMirror[nPosIni + 6]
+self:nCount := aMirror[nPosIni + 7]
 
 Return
 
@@ -756,6 +760,7 @@ self:nEnd := 0
 self:Minimal := 1
 self:nCount := 0
 self:lReset := .T.
+self:nForceOr := nil
 
 For nI := nPos To Len(cStr)
 	self:LastFail := nil
@@ -813,6 +818,7 @@ Local lContinue  := .T.
 Local nPos        := nPos0
 Local lPosibling := .F.
 Local aMirror
+Local aAux
 Local nCnt
 Local nAux
 
@@ -821,6 +827,7 @@ Private oPattern
 While lContinue
 	If !lPosibling
 		If self:lReset
+			self:nForceOr := nil
 			self:nCount++
 			self:Patterns[self:nCount]:ResetSatisfatory()
 			lStarted := (self:nCount == 1)
@@ -872,6 +879,16 @@ While lContinue
 
 	//Os resultados abaixo são indicadores de que a Pattern deve ser iniciada
 	If self:LastResult ==  REGEXP_RESULT_NOMATCH .Or. self:lReset
+		If oPattern:Type == REGEXP_OR
+			If ValType(self:nForceOr) == "U"
+				self:nForceOr := 1
+			EndIf
+			If self:nForceOr < Len(oPattern:Patterns)
+				aMirror := self:Mirror()
+				aMirror[Len(aMirror)-1] := self:nForceOr+1
+				aAdd(self:Posibles, {nPos, aMirror})
+			EndIf
+		EndIf
 		self:lReset := .F.
 		//Se for a primeira Pattern, definir a posição inicial do Match como a atual
 		If self:nCount == 1
@@ -879,7 +896,7 @@ While lContinue
 			self:nStart := nPos
 			self:nTimes++
 		EndIf
-		self:LastResult := oPattern:StartMatch(cStr, @nPos, self:lCase)
+		self:LastResult := oPattern:StartMatch(cStr, @nPos, self:lCase, self:nForceOr)
 	Else
 		self:LastResult := oPattern:Matching(cStr, @nPos)
 	EndIf
@@ -893,7 +910,7 @@ While lContinue
 			While Len(self:Posibles) > 0
 				nAux := (aMirror := aTail(self:Posibles))[1]
 				aSize(self:Posibles, Len(self:Posibles) - 1)
-				If Len(aMirror) > 2 .Or. !(self:Satisfatory .And. self:UniSatisfatory) .Or. nAux == nPos
+				If Len(aMirror) > 2 .Or. !(self:Satisfatory .And. self:UniSatisfatory) .Or. nAux <= nPos
 					UndoGroup(nAux)
 					nPos := nAux
 					self:lReset := .T.
@@ -1001,24 +1018,28 @@ If self:LastResult == REGEXP_RESULT_SUCCESS
 		self:LastResult := REGEXP_RESULT_PARTIAL
 		self:lReset := .T.
 	Else
-		self:UniSatisfatory := .T.
-		If self:Min > 1 .Or. self:Max != 1
-			If self:Min > self:nTimes .Or. Empty(self:Max) .Or. self:nTimes < self:Max
-				If nPos < nLenStr
-					self:Satisfatory := (self:Min <= self:nTimes)
-					self:nCount := 0
-					self:Posibles := {}
-					self:lReset := .T.
-					self:LastResult :=  REGEXP_RESULT_PARTIAL
+		If !self:lInEnd .Or. (Len(cStr) <= nPos)
+			self:UniSatisfatory := .T.
+			If self:Min > 1 .Or. self:Max != 1
+				If self:Min > self:nTimes .Or. Empty(self:Max) .Or. self:nTimes < self:Max
+					If nPos < nLenStr
+						self:Satisfatory := (self:Min <= self:nTimes)
+						self:nCount := 0
+						self:Posibles := {}
+						self:lReset := .T.
+						self:LastResult :=  REGEXP_RESULT_PARTIAL
+					Else
+						self:LastResult :=  IIF(self:Min > self:nTimes, REGEXP_RESULT_FAIL, REGEXP_RESULT_SUCCESS)
+					EndIf
+				ElseIf self:nTimes == self:Max
+					self:LastResult := REGEXP_RESULT_SUCCESS
+					self:UniSatisfatory := .T.
 				Else
-					self:LastResult :=  IIF(self:Min > self:nTimes, REGEXP_RESULT_FAIL, REGEXP_RESULT_SUCCESS)
+					self:LastResult := REGEXP_RESULT_FAIL
 				EndIf
-			ElseIf self:nTimes == self:Max
-				self:LastResult := REGEXP_RESULT_SUCCESS
-				self:UniSatisfatory := .T.
-			Else
-				self:LastResult := REGEXP_RESULT_FAIL
 			EndIf
+		Else
+			self:LastResult := REGEXP_RESULT_NOMATCH
 		EndIf
 	EndIf
 
@@ -1199,7 +1220,7 @@ EndIf
 
 self:Result := aRes
 
-Return ValType(self:Result) != "U"
+Return Len(aRes) > 0
 
 
 /*/{Protheus.doc} Match
