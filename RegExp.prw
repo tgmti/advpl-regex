@@ -42,6 +42,7 @@ METHOD Matching(cStr, nPos)
 METHOD Satisfy()
 METHOD IsLazy()
 METHOD IsPosible(cStr, nPos, lCase)
+METHOD Approve(cStr, nPos)
 METHOD InInit(cStr, nPos)
 METHOD InEnd(cStr, nPos)
 ENDCLASS
@@ -214,10 +215,56 @@ self:RedoMirror(aMirror)
 
 Return aIn(nRet, Acceptable)
 
+
+/*/{Protheus.doc} Approve
+	Determina se o padrão pode ser aprovado.
+@author Thiago
+@since 08/03/2014
+@version 1.0
+
+@param cStr, character, String sendo processada
+@param nPos, numérico, Posição sendo processada
+
+@description
+
+O conceito de aprovação difere do do conceito de satisfatório.
+Enquanto a pattern é satisfatória se ela casar com o texto ou parte dele em particular, ela é aprovada
+se as patterns seguintes não tiverem nenhum impedimento em prosseguir com a validação, isto é,
+se a validação não vai falhar se elas continuarem a partir dali.
+
+A aprovação só é verificada se a Pattern de agrupamento tiver sucesso em sua avaliação. Neste momento, ela
+checa seu status de aprovação e, caso haja alguma falha, um caminho alternativo é tomado.
+
+/*/
+METHOD Approve(cStr, nPos) CLASS RegExpPattern
+
+Return self:Satisfatory
+
+
+/*/{Protheus.doc} InInit
+	Verifica se a Pattern, como um todo, deve estar "colada" com o início do texto
+@author Thiago
+@since 08/03/2014
+@version 1.0
+
+@param cStr, character, String sendo analisada
+@param nPos, numérico, Posição sendo analisada
+
+/*/
 METHOD InInit(cStr, nPos) CLASS RegExpPattern
 
-
 Return self:oParent:InInit(cStr, nPos)
+
+/*/{Protheus.doc} InEnd
+	Verifica se a Pattern, como um todo, deve estar "colada" com o fim do texto
+@author Thiago
+@since 08/03/2014
+@version 1.0
+
+@param cStr, character, String sendo analisada
+@param nPos, numérico, Posição sendo analisada
+
+/*/
 
 METHOD InEnd(cStr, nPos) CLASS RegExpPattern
 
@@ -684,6 +731,7 @@ METHOD StartMatch(cStr, nPos, lCase)
 METHOD Matching(cStr, nPos0)
 METHOD IsLazy()
 METHOD IsPosible(cStr, nPos, lCase)
+METHOD Approve(cStr, nPos)
 METHOD InInit(cStr, nPos)
 METHOD InEnd(cStr, nPos)
 
@@ -926,7 +974,8 @@ While lContinue
 	ProcOk(self, @lStarted, @nPos, @nLen, @nLenStr, @cStr)
 
 	If (self:LastResult == REGEXP_RESULT_NOMATCH .Or. self:LastResult == REGEXP_RESULT_FAIL .Or. ;
-		(nLenStr <= nPos .And. self:LastResult ==  REGEXP_RESULT_PARTIAL))
+		(nLenStr <= nPos .And. self:LastResult ==  REGEXP_RESULT_PARTIAL)) ;
+		.Or. (self:LastResult == REGEXP_RESULT_SUCCESS .And. self:InEnd(@cStr, nPos))
 		//
 		If Len(self:Posibles) > 0
 			While Len(self:Posibles) > 0
@@ -1103,7 +1152,7 @@ Else
 		EndIf
 		UndoGroup(nPos)
 	EndIf
-EndIf	
+EndIf
 
 If (self:LastResult == REGEXP_RESULT_PARTIAL .And. (oPattern:Satisfatory .Or. self:lReset) .And. nLenStr <= nPos) ;
 	.Or. (!self:Satisfatory .And. oPattern:Satisfatory .And. (self:LastResult == REGEXP_RESULT_NOMATCH ;
@@ -1150,6 +1199,26 @@ EndIf
 
 Return
 
+METHOD Approve(cStr, nPos) CLASS GroupRegExpPattern
+Local lRet := .T.
+Local nLen := Len(self:Patterns)
+Local nI
+
+If self:nCount == 0 .Or. self:nCount < nLen
+	//
+	For nI := self:nCount+1 To nLen
+		self:Patterns[nI]:ResetSatisfatory()
+		If !self:Satisfatory
+			Exit
+		EndIf
+		If nI > Len(self:Patterns)
+			lRet := !self:IsInEnd .Or. nPos >= Len(cStr)
+		EndIf
+	Next
+EndIf
+
+Return lRet
+
 METHOD InInit(cStr, nPos) CLASS GroupRegExpPattern
 Local lRet
 
@@ -1163,12 +1232,11 @@ Return lRet
 
 METHOD InEnd(cStr, nPos) CLASS GroupRegExpPattern
 Local lRet
-Default cStr := ""
-Default nPos := 0
-If ValType(self:oParent) == "U"
-	lRet := self:lInEnd .And. (nPos < Len(cStr) .Or. self:nCount < Len(self:Patterns))
-Else
+
+If ValType(self:oParent) == "O" .And. self:Approve(@cStr, nPos)
 	lRet := _Super:InEnd(cStr, nPos)
+Else
+	lRet := self:lInEnd .And. (nPos < Len(cStr) .Or. !self:Approve(@cStr, nPos))
 EndIf
 
 Return lRet
