@@ -1823,7 +1823,7 @@ Return RegExpComp(cPattern)
 @return object, Instância de RegExp
 
 /*/
-Static Function RegExpComp(cPattern, nIni, aParams)
+Static Function RegExpComp(cPattern, nIni, aParams, lGroup0, nGroup0, cGrpName)
 Local cChar
 Local nI
 Local uEscape
@@ -1851,6 +1851,7 @@ Local lGroup
 
 Default nIni       := IIF(lStart, 2, 1)
 Default aParams    := {}
+Default lGroup0    := .T.
 
 For nI := nIni To nEnd
 	cChar := SubStr(cPattern, nI, 1)
@@ -1957,14 +1958,7 @@ For nI := nIni To nEnd
 				Else
 					lGroup := .F.
 				EndIf
-				uEscape := RegExpComp(cPattern, @nI,@aParams)
-				If !lGroup
-					If !Empty(cAux) .And. (nAux := aScan(aParams, { |aGroup| aGroup[2, 1] == cAux })) > 0
-						aAdd(aParams[nAux,2,2], uEscape)
-					Else
-						aAdd(aParams, { nGroup, { cAux, { uEscape } } })
-					EndIf
-				EndIf
+				uEscape := RegExpComp(cPattern, @nI,@aParams, lGroup, nGroup, cAux)
 			ElseIf cChar == ")"
 				If !lSub
 					UserException ("Invalid character )")
@@ -2025,7 +2019,7 @@ If Len(aOr) > 0
 		aAdd(aOr, GroupRegExpPattern():New(aPatterns,,,,.T.))
 		lOrLiteral := .F.
 	EndIf
-	If lOrLiteral
+	If lOrLiteral .And. !lSub .And. lGroup0
 		If !Empty(cLiteral)
 			aAdd(aOr, cLiteral)
 		EndIf
@@ -2037,6 +2031,9 @@ If Len(aOr) > 0
 		For nI := 1 To Len(aOr)
 			If ValType(aOr[nI]) == "C"
 				aOr[nI] := LiteralRegExpPattern():New(aOr[nI])
+			EndIf
+			If !lGroup0
+				aOr[nI] := GroupRegExpPattern():New({ aOr[nI] },,,,.T.,.F.)
 			EndIf
 		Next
 		aPatterns := { OrRegExpPattern():New(aOr) }
@@ -2054,6 +2051,24 @@ If !lSub
 		aAdd(aGroupIndex, aParams[nI, 2])
 	Next
 	oRet := RegExp():New(oRet, aGroupIndex)
+EndIf
+
+If !lGroup0
+	If !Empty(cGrpName) .And. (nAux := aScan(aParams, { |aGroup| aGroup[2, 1] == cGrpName })) > 0
+		If Len(aOr) > 0
+			For nI := 1 To Len(aOr)
+				aAdd(aParams[nAux,2,2], aOr[nI])
+			Next
+		Else
+			aAdd(aParams[nAux,2,2], oRet)
+		EndIf
+	Else
+		If Len(aOr) > 0
+			aAdd(aParams, { nGroup0, { cGrpName, aOr } })
+		Else
+			aAdd(aParams, { nGroup0, { cGrpName, { oRet } } })
+		EndIf
+	EndIf
 EndIf
 
 Return oRet
