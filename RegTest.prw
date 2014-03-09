@@ -262,6 +262,13 @@ Local aTests := ;
 				{ "01000000", {} };
 		} ;
 	};
+	,{; //25
+			'thiago'	;
+		,	'\w+on|\w+re|\w+la|\w+go'	;
+		,	{ ;
+				{ "thiago", {} };
+		} ;
+	};
 }
 Local cLog := ""
 Local nI
@@ -271,7 +278,7 @@ Local nL
 Local oMatcher
 
 For nI := 1 to Len(aTests)
-	If nI == 22
+	If nI == 25
 		ConOut("If condicional")
 	EndIf
 	oMatcher := U_ReComp(aTests[nI, 2])
