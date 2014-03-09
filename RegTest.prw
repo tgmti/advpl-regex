@@ -269,6 +269,13 @@ Local aTests := ;
 				{ "thiago", {} };
 		} ;
 	};
+	,{; //26
+			'thiago oliveira'	;
+		,	'((?:(?:th|ja|na|la|thi)))(son|ago)\s+(?:silva|oliveira)'	;
+		,	{ ;
+				{ "thiago oliveira", {{"thi"}, {"ago"}} };
+		} ;
+	};
 }
 Local cLog := ""
 Local nI
