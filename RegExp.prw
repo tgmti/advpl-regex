@@ -228,12 +228,8 @@ Return aIn(nRet, Acceptable)
 @description
 
 O conceito de aprovação difere do do conceito de satisfatório.
-Enquanto a pattern é satisfatória se ela casar com o texto ou parte dele em particular, ela é aprovada
-se as patterns seguintes não tiverem nenhum impedimento em prosseguir com a validação, isto é,
-se a validação não vai falhar se elas continuarem a partir dali.
-
-A aprovação só é verificada se a Pattern de agrupamento tiver sucesso em sua avaliação. Neste momento, ela
-checa seu status de aprovação e, caso haja alguma falha, um caminho alternativo é tomado.
+Enquanto uma pattern é satisfatória se ela bate com determinada parte do texto, ela é aprovada
+se as patterns seguintes forem satisfatórias
 
 /*/
 METHOD Approve(cStr, nPos) CLASS RegExpPattern
