@@ -284,6 +284,13 @@ Local aTests := ;
 		} ;
 	};
 	,{; //28
+			'teste'	;
+		,	'(\w++)?(\w++)?(\w++)?'	;
+		,	{ ;
+				{ "teste", { {"teste"}, {}, {}} };
+		} ;
+	};
+	,{; //29
 			'thiago oliveira'	;
 		,	'((?:(?:th|ja|na|la|thi)))(son|ago)\s+(?:silva|oliveira)'	;
 		,	{ ;
@@ -299,7 +306,7 @@ Local nL
 Local oMatcher
 
 For nI := 1 to Len(aTests)
-	If nI == 27
+	If nI == 28
 		ConOut("If condicional")
 	EndIf
 	oMatcher := U_ReComp(aTests[nI, 2])
