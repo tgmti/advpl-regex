@@ -291,6 +291,12 @@ Local aTests := ;
 		} ;
 	};
 	,{; //29
+			'(\w++)\w'	;
+		,	'teste'	;
+		,	{ ;
+		} ;
+	};
+	,{; //30
 			'thiago oliveira'	;
 		,	'((?:(?:th|ja|na|la|thi)))(son|ago)\s+(?:silva|oliveira)'	;
 		,	{ ;
