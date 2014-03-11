@@ -270,6 +270,20 @@ Local aTests := ;
 		} ;
 	};
 	,{; //26
+			'aaaabab'	;
+		,	'(\w)*?b+'	;
+		,	{ ;
+				{ "aaaab", {{"a", "a", "a", "a"}} };
+			,	{ "ab", {{"a"}} };
+		} ;
+	};
+	,{; //27
+			'aaaabab'	;
+		,	'(\w)*+b+'	;
+		,	{ ;
+		} ;
+	};
+	,{; //28
 			'thiago oliveira'	;
 		,	'((?:(?:th|ja|na|la|thi)))(son|ago)\s+(?:silva|oliveira)'	;
 		,	{ ;
@@ -285,7 +299,7 @@ Local nL
 Local oMatcher
 
 For nI := 1 to Len(aTests)
-	If nI == 25
+	If nI == 27
 		ConOut("If condicional")
 	EndIf
 	oMatcher := U_ReComp(aTests[nI, 2])

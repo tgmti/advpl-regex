@@ -1146,7 +1146,6 @@ Else
 			self:LastResult := REGEXP_RESULT_PARTIAL
 			self:lReset := .T.
 		EndIf
-		UndoGroup(nPos)
 	EndIf
 EndIf
 
@@ -1823,7 +1822,7 @@ Return RegExpComp(cPattern)
 @return object, Instância de RegExp
 
 /*/
-Static Function RegExpComp(cPattern, nIni, aParams, lGroup0, nGroup0, cGrpName)
+Static Function RegExpComp(cPattern, nIni, aParams, aArrange, lGroup0, nGroup0, cGrpName)
 Local cChar
 Local nI
 Local uEscape
@@ -1844,6 +1843,7 @@ Local lEnd       := !lSub .And. Right(cPattern, 1) == "$"
 Local nEnd       := IIF(lEnd, Len(cPattern)-1, Len(cPattern))
 Local lOrLiteral := .T.
 Local aGroupIndex := {}
+Local aArrange0  := {}
 Local cAux
 Local nAux
 Local nGroup
@@ -1852,6 +1852,7 @@ Local lGroup
 Default nIni       := IIF(lStart, 2, 1)
 Default aParams    := {}
 Default lGroup0    := .T.
+Default aArrange   := {}
 
 For nI := nIni To nEnd
 	cChar := SubStr(cPattern, nI, 1)
@@ -1913,6 +1914,7 @@ For nI := nIni To nEnd
 						Else
 							uEscape:Min := nMin
 							uEscape:Max := nMax
+							uEscape:QuantType := nQuantType
 							aAdd(aPatterns, uEscape)
 						EndIf
 					ElseIf cTypeEsc == "A"
@@ -1958,7 +1960,7 @@ For nI := nIni To nEnd
 				Else
 					lGroup := .F.
 				EndIf
-				uEscape := RegExpComp(cPattern, @nI,@aParams, lGroup, nGroup, cAux)
+				uEscape := RegExpComp(cPattern, @nI,@aParams, aArrange0, lGroup, nGroup, cAux)
 			ElseIf cChar == ")"
 				If !lSub
 					UserException ("Invalid character )")
@@ -1974,6 +1976,7 @@ For nI := nIni To nEnd
 					aAdd(aOr, cLiteral)
 					cLiteral := ""
 				EndIf
+				aSize(aArrange0, 0)
 			Else
 				cLiteral += cChar
 			EndIf
@@ -2056,6 +2059,10 @@ EndIf
 If !lGroup0
 	If !Empty(cGrpName) .And. (nAux := aScan(aParams, { |aGroup| aGroup[2, 1] == cGrpName })) > 0
 		If Len(aOr) > 0
+			//Caso seja um Or, cada possibilidade do Or é adicionada como objeto aceito para o mesmo agrupamento
+			//Isso possibilita que a ordem e numeração do agrupamento permaneça o mesmo, independente
+			// das regexps seguintes a serem parseadas sejam rearranjadas para promover desempenho
+			//ou viabilidade de análise
 			For nI := 1 To Len(aOr)
 				aAdd(aParams[nAux,2,2], aOr[nI])
 			Next
@@ -2064,11 +2071,19 @@ If !lGroup0
 		EndIf
 	Else
 		If Len(aOr) > 0
+			//Caso seja um Or, cada possibilidade do Or é adicionada como objeto aceito para o mesmo agrupamento
+			//Isso possibilita que a ordem e numeração do agrupamento permaneça o mesmo, independente
+			// das regexps seguintes a serem parseadas sejam rearranjadas para promover desempenho
+			//ou viabilidade de análise
 			aAdd(aParams, { nGroup0, { cGrpName, aOr } })
 		Else
 			aAdd(aParams, { nGroup0, { cGrpName, { oRet } } })
 		EndIf
 	EndIf
+EndIf
+
+If Len(aOr) > 0
+	aAdd(aArrange, aOr)
 EndIf
 
 Return oRet
