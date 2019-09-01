@@ -2,6 +2,14 @@
 
 User Function RegTest()
 
+	RpcSetEnv( '99', '01' )
+	RegTest()
+	RpcClearEnv()
+
+Return
+
+Static Function RegTest()
+
 Local oDlg
 Local cRegExp := ""
 Local cTexto := ""
@@ -10,20 +18,20 @@ Local cResult
 Local cResult2
 Local o1, o2, o3
 
-DEFINE MSDIALOG oDlg FROM 0,0 TO 650,1100 PIXEL
+DEFINE MSDIALOG oDlg FROM 0,0 TO 800,1300 PIXEL
 
-@  18 ,  7 SAY "REGEXP" Of oDlg PIXEL SIZE 54 ,9
-@  17 , 40 GET o1 VAR cRegExp MEMO OF oDlg PIXEL SIZE 500 ,50
+@  48 ,  7 SAY "REGEXP" Of oDlg PIXEL SIZE 54 ,9
+@  47 , 40 GET o1 VAR cRegExp MEMO OF oDlg PIXEL SIZE 500 ,50
 
-@  75,  7 SAY "EXPRE." Of oDlg PIXEL SIZE 54 ,9
-@  74 , 40 GET o2 VAR cTexto MEMO OF oDlg PIXEL SIZE 500 ,50
+@  115,  7 SAY "EXPRE." Of oDlg PIXEL SIZE 54 ,9
+@  114 , 40 GET o2 VAR cTexto MEMO OF oDlg PIXEL SIZE 500 ,50
 
-@  140 , 40 GET o3 VAR cResult MEMO OF oDlg PIXEL SIZE 500 ,50
+@  180 , 40 GET o3 VAR cResult MEMO OF oDlg PIXEL SIZE 500 ,50
 
-@  211 ,  7 SAY "Tranformar" Of oDlg PIXEL SIZE 54 ,9
-@  210 , 40 GET o3 VAR cOutput MEMO OF oDlg PIXEL SIZE 500 ,50
+@  251 ,  7 SAY "Tranformar" Of oDlg PIXEL SIZE 54 ,9
+@  250 , 40 GET o3 VAR cOutput MEMO OF oDlg PIXEL SIZE 500 ,50
 
-@  270 , 40 GET o3 VAR cResult2 MEMO OF oDlg PIXEL SIZE 500 ,50
+@  310 , 40 GET o3 VAR cResult2 MEMO OF oDlg PIXEL SIZE 500 ,50
 
 ACTIVATE MSDIALOG oDlg ON INIT EnchoiceBar(oDlg, {|| cResult := Testa(cRegExp, cTexto, cOutput, @cResult2);
 											,oDlg:Refresh();
@@ -61,18 +69,15 @@ cResult2 := ""
 
 Return cRet
 
-	
+
 /*/{Protheus.doc} RegUnit
 	Unidade de teste do RegExp
 @author thiago
 @since 07/09/2013
-@version 1.0		
-
+@version 1.0
 @description
-
 O intuito desta função é testar o mecanismo de regexp com expressões conhecidas que ofereçam diferentes situações.
 Para inserir um teste, basta incluir um novo elemento na Array aTests. O elemento deve ter o seguinte formato:
-
 	{; //Número do teste
 			<TEXTO QUE SERÁ TESTADO>
 		,	<EXPRESÃO REGEX>
@@ -83,7 +88,6 @@ Para inserir um teste, basta incluir um novo elemento na Array aTests. O element
 			,	{ <RESULTADO OCORRENCIA N>, { { <CAPTURA 1 GRUPO 1>, <CAPTURA 2 GRUPO 2>, ..., <CAPTURA N GRUPO 2> }, { <CAPTURA 1 GRUPO 2>,...}, { <CAPTURA 1 GRUPO N>, ...} } } ;
 		} ;
 	} ;
-
 O número do teste evidentemente apenas está ali para facilitar a manutenção. É comum montarmos o teste e o mesmo conter
 informações erradas, por isso, use o debug para checar e deixar seu teste com informação 100% confiável.
 Tome cuidado especial se a expressão utilizada por ventura capturar caracteres especiais, como \n e \r, pois será necessário deixar
@@ -340,7 +344,7 @@ For nI := 1 to Len(aTests)
 						EndIf
 					Next
 				EndIf
-			next 
+			next
 		EndIf
 	ElseIf Len(aTests[nI, 3]) > 0
 		cLog += "Can't match test "+Alltrim(Str(nI, 15))+CRLF
